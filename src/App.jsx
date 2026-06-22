@@ -2,18 +2,18 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import './App.css'
 
+// SIMULACION TEMPORAL: forzar fecha para pruebas. Quitar antes de produccion real.
+const FECHA_SIMULADA = '2026-03-12'
+
 function fechaHoy() {
-  const hoy = new Date()
-  const y = hoy.getFullYear()
-  const m = String(hoy.getMonth() + 1).padStart(2, '0')
-  const d = String(hoy.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+  return FECHA_SIMULADA
 }
 
 const PACIENTE_VACIO = {
   cuenta_id: '',
   nombre: '',
   apellido: '',
+  apellido_materno: '',
   edad: '',
   diagnostico: '',
   habitacion: '',
@@ -82,6 +82,7 @@ function App() {
       cuenta_id: formulario.cuenta_id,
       nombre: formulario.nombre,
       apellido: formulario.apellido,
+      apellido_materno: formulario.apellido_materno,
       edad: formulario.edad ? parseInt(formulario.edad) : null,
       diagnostico: formulario.diagnostico,
       habitacion: formulario.habitacion,
@@ -137,6 +138,7 @@ function App() {
     return (
       p.nombre?.toLowerCase().includes(texto) ||
       p.apellido?.toLowerCase().includes(texto) ||
+      p.apellido_materno?.toLowerCase().includes(texto) ||
       p.habitacion?.toLowerCase().includes(texto)
     )
   })
@@ -178,7 +180,7 @@ function App() {
                 <span className="cuenta-id">ID: {paciente.cuenta_id || '-'}</span>
               </div>
               <h2 className="nombre-paciente">
-                {paciente.nombre} {paciente.apellido}
+                {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
               </h2>
               <div className="detalle-grid">
                 <div className="detalle-item">
@@ -232,12 +234,21 @@ function App() {
             </label>
 
             <label>
-              Apellido
+              Apellido paterno
               <input
                 type="text"
                 value={formulario.apellido}
                 onChange={e => actualizarCampo('apellido', e.target.value)}
                 required
+              />
+            </label>
+
+            <label>
+              Apellido materno
+              <input
+                type="text"
+                value={formulario.apellido_materno}
+                onChange={e => actualizarCampo('apellido_materno', e.target.value)}
               />
             </label>
 

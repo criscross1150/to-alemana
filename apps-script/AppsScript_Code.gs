@@ -7,6 +7,40 @@ const SUPABASE_URL = 'https://djyeniaelzxrmpkrgkjr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeWVuaWFlbHp4cm1wa3Jna2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzQyNjUsImV4cCI6MjA5NzcxMDI2NX0.4aCN38oiASNJ_WNoGtLXJVKsbhTSLUsylIO6f7YHo-w';
 const REMITENTE = 'serviciodesaludcat@gmail.com';
 
+const DIAGNOSTICOS = {
+  '1': 'Neumonia',
+  '2': 'Cirugía abdominal laparoscópica',
+  '3': 'Cirugía abdominal laparotomía',
+  '4': 'Cirugía tórax',
+  '5': 'ITU',
+  '6': 'Trauma raquimedular',
+  '7': 'Trombosis',
+  '8': 'Sepsis',
+  '9': 'ACV',
+  '10': 'Neuroquirúrgico',
+  '12': 'Hipoxia perinatal',
+  '13': 'SBO pediátrico',
+  '14': 'ATL',
+  '15': 'Cardiológico',
+  '16': 'Cáncer',
+  '17': 'Prótesis de cadera',
+  '18': 'Prótesis de rodilla',
+  '19': 'Otro',
+  '20': 'Plastía de cadera',
+  '21': 'Plastía de rodilla',
+  '22': 'TEC',
+  '23': 'PTM',
+  '24': 'Paratiroidectomía',
+  '25': 'Cirugía plástica',
+  '26': 'EPOC / Respiratorio crónico',
+  '27': 'RNPT',
+  '28': 'Cirugía columna',
+  '29': 'Síndrome convulsivo',
+  '30': 'Falla renal',
+  '31': 'Traumatológico',
+  '32': 'Psiquiatría'
+};
+
 function procesarCorreoDiario() {
   const hoy = new Date();
   const nombreHoja = obtenerNombreHojaMes(hoy);
@@ -63,9 +97,10 @@ function procesarCorreoDiario() {
     const habitacion = fila[3];    // columna D (indice 3)
     const atencionesDia = fila[4]; // columna E (indice 4)
     const nombre = fila[5];        // columna F (indice 5)
-    const apellido = fila[6];      // columna G (indice 6)
+    const apellido = fila[6];      // columna G (indice 6) - paterno
+    const apellidoMaterno = fila[7]; // columna H (indice 7) - materno
     const edad = fila[8];          // columna I (indice 8)
-    const diagnostico = fila[9];   // columna J (indice 9)
+    const diagnosticoCodigo = fila[9]; // columna J (indice 9) - codigo numerico
     const cuentaId = fila[13];     // columna N (indice 13)
 
     if (!fechaAtencion) continue;
@@ -73,12 +108,15 @@ function procesarCorreoDiario() {
     const fechaFilaStr = formatearFecha(new Date(fechaAtencion));
     if (fechaFilaStr !== fechaHoyStr) continue; // solo pacientes de hoy
 
+    const diagnosticoTexto = DIAGNOSTICOS[String(diagnosticoCodigo).trim()] || ('Código ' + diagnosticoCodigo);
+
     pacientesHoy.push({
       cuenta_id: String(cuentaId || ''),
-      nombre: String(nombre || ''),
-      apellido: String(apellido || ''),
+      nombre: String(nombre || '').trim(),
+      apellido: String(apellido || '').trim(),
+      apellido_materno: String(apellidoMaterno || '').trim(),
       edad: parseInt(edad) || null,
-      diagnostico: String(diagnostico || ''),
+      diagnostico: diagnosticoTexto,
       habitacion: String(habitacion || ''),
       atenciones_dia: parseInt(atencionesDia) || null,
       fecha_atencion: fechaFilaStr

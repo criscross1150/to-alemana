@@ -26,18 +26,27 @@ App web para gestionar lista diaria de pacientes atendidos en Clínica Alemana T
 | Columna | Tipo | Origen Excel | Descripción |
 |---|---|---|---|
 | id | uuid (auto) | — | clave primaria |
-| cuenta_id | text | columna N | identificador único de paciente/cuenta |
+| cuenta_id | text | columna N (CTA.CTE) | identificador único de paciente/cuenta |
 | nombre | text | columna F | nombre |
-| apellido | text | columna G | apellido |
+| apellido | text | columna G | apellido paterno |
+| apellido_materno | text | columna H | apellido materno (agregado tras revisar Excel real) |
 | edad | int | columna I | edad |
-| diagnostico | text | columna J | diagnóstico de ingreso (por ahora numérico, se corrige a futuro) |
+| diagnostico | text | columna J (DG) | diagnóstico traducido desde código numérico (ver tabla DIAGNOSTICOS en script) |
 | habitacion | text | columna D | habitación |
-| atenciones_dia | int | columna E | número de atenciones diarias |
-| fecha_atencion | date | columna B | fecha de atención |
+| atenciones_dia | int | columna E (N°INDICADOS) | número de atenciones diarias |
+| fecha_atencion | date | columna B (FECHA) | fecha de atención |
 | created_at | timestamp (auto) | — | fecha de creación del registro |
 | updated_at | timestamp (auto) | — | fecha de última edición |
 
 RLS habilitado, policy abierta (sin login por ahora).
+
+## Mapeo de diagnósticos (código → texto)
+
+El Excel usa códigos numéricos en columna J. El script `AppsScript_Code.gs` traduce automáticamente vía diccionario `DIAGNOSTICOS`:
+
+1=Neumonia, 2=Cirugía abdominal laparoscópica, 3=Cirugía abdominal laparotomía, 4=Cirugía tórax, 5=ITU, 6=Trauma raquimedular, 7=Trombosis, 8=Sepsis, 9=ACV, 10=Neuroquirúrgico, 12=Hipoxia perinatal, 13=SBO pediátrico, 14=ATL, 15=Cardiológico, 16=Cáncer, 17=Prótesis de cadera, 18=Prótesis de rodilla, 19=Otro, 20=Plastía de cadera, 21=Plastía de rodilla, 22=TEC, 23=PTM, 24=Paratiroidectomía, 25=Cirugía plástica, 26=EPOC/Respiratorio crónico, 27=RNPT, 28=Cirugía columna, 29=Síndrome convulsivo, 30=Falla renal, 31=Traumatológico, 32=Psiquiatría.
+
+Nota: código 11 no existe en la fuente original (salto intencional, confirmado por el usuario).
 
 ## Lógica del Excel
 
