@@ -45,10 +45,13 @@ function App() {
       .order('habitacion', { ascending: true })
 
     if (error) {
-      setError('No se pudo cargar la lista. Intenta de nuevo.')
+      setError('Error: ' + error.message + ' | code: ' + (error.code || 'sin codigo') + ' | hint: ' + (error.hint || 'sin hint'))
       console.error(error)
     } else {
       setPacientes(data)
+      if (data.length === 0) {
+        setError('Conexion OK. 0 pacientes con fecha_atencion = ' + fechaHoy() + '. URL: ' + import.meta.env.VITE_SUPABASE_URL)
+      }
     }
     setCargando(false)
   }
