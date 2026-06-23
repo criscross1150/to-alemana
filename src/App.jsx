@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import './App.css'
 
-// SIMULACION TEMPORAL: forzar fecha para pruebas. Quitar antes de produccion real.
-const FECHA_SIMULADA = '2026-03-12'
-
 function fechaHoy() {
-  return FECHA_SIMULADA
+  const hoy = new Date()
+  const y = hoy.getFullYear()
+  const m = String(hoy.getMonth() + 1).padStart(2, '0')
+  const d = String(hoy.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 const PACIENTE_VACIO = {
