@@ -12,8 +12,8 @@ body {
 .contenedor {
   max-width: 720px;
   margin: 0 auto;
-  padding: 16px;
-  padding-bottom: 80px;
+  padding: 10px 8px;
+  padding-bottom: 70px;
 }
 
 .encabezado {
@@ -100,89 +100,99 @@ body {
   font-size: 15px;
 }
 
-.lista-pacientes {
+.tabla-pacientes {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.tarjeta-paciente {
   background: white;
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 10px;
   border: 1px solid #E2E6EA;
+  overflow: hidden;
 }
 
-.tarjeta-fila-superior {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #5A6472;
-  margin-bottom: 4px;
-}
-
-.habitacion {
-  font-weight: 700;
-  color: #0B5FA5;
-}
-
-.nombre-paciente {
-  font-size: 18px;
-  margin: 0 0 10px 0;
-  color: #1A1F26;
-}
-
-.detalle-grid {
+.fila-encabezado,
+.fila-paciente {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
+  grid-template-columns: 38px 1fr 32px 1fr 40px 60px 56px;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 8px;
+  font-size: 12.5px;
 }
 
-.detalle-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.detalle-ancho {
-  grid-column: 1 / -1;
-}
-
-.etiqueta {
+.fila-encabezado {
+  background: #F0F3F6;
+  font-weight: 700;
+  color: #5A6472;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #8A93A0;
+  letter-spacing: 0.03em;
 }
 
-.valor {
-  font-size: 15px;
+.fila-paciente {
+  border-top: 1px solid #EEF0F2;
   color: #1A1F26;
+}
+
+.fila-paciente:nth-child(even) {
+  background: #FAFBFC;
+}
+
+.col-hab {
+  font-weight: 700;
+  color: #0B5FA5;
+  text-align: center;
+}
+
+.col-nombre {
+  font-weight: 600;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+.col-edad {
+  text-align: center;
+}
+
+.col-dg {
+  word-break: break-word;
+  line-height: 1.25;
+  color: #3A434E;
+}
+
+.col-aten {
+  text-align: center;
+}
+
+.col-id {
+  color: #8A93A0;
+  font-size: 11px;
   word-break: break-word;
 }
 
-.tarjeta-acciones {
+.col-acciones {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  justify-content: flex-end;
 }
 
-.boton-editar,
-.boton-eliminar {
-  flex: 1;
-  padding: 9px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
+.boton-icono {
+  width: 24px;
+  height: 24px;
   border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.boton-editar {
+.boton-icono.editar {
   background: #E8F1FA;
   color: #0B5FA5;
 }
 
-.boton-eliminar {
+.boton-icono.eliminar {
   background: #FCE8E8;
   color: #A12424;
 }

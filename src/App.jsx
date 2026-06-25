@@ -210,38 +210,34 @@ function App() {
           {busqueda ? 'No hay pacientes que coincidan.' : 'No hay pacientes registrados hoy.'}
         </p>
       ) : (
-        <div className="lista-pacientes">
+        <div className="tabla-pacientes">
+          <div className="fila-encabezado">
+            <span className="col-hab">Hab</span>
+            <span className="col-nombre">Nombre</span>
+            <span className="col-edad">Edad</span>
+            <span className="col-dg">Diagnóstico</span>
+            <span className="col-aten">At/día</span>
+            <span className="col-id">ID</span>
+            <span className="col-acciones"></span>
+          </div>
           {pacientesFiltrados.map(paciente => (
-            <div key={paciente.id} className="tarjeta-paciente">
-              <div className="tarjeta-fila-superior">
-                <span className="habitacion">Hab. {paciente.habitacion || '-'}</span>
-                <span className="cuenta-id">ID: {paciente.cuenta_id || '-'}</span>
-              </div>
-              <h2 className="nombre-paciente">
+            <div key={paciente.id} className="fila-paciente">
+              <span className="col-hab">{paciente.habitacion || '-'}</span>
+              <span className="col-nombre">
                 {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
-              </h2>
-              <div className="detalle-grid">
-                <div className="detalle-item">
-                  <span className="etiqueta">Edad</span>
-                  <span className="valor">{paciente.edad ?? '-'}</span>
-                </div>
-                <div className="detalle-item">
-                  <span className="etiqueta">Atenciones/día</span>
-                  <span className="valor">{paciente.atenciones_dia ?? '-'}</span>
-                </div>
-                <div className="detalle-item detalle-ancho">
-                  <span className="etiqueta">Diagnóstico</span>
-                  <span className="valor">{paciente.diagnostico || '-'}</span>
-                </div>
-              </div>
-              <div className="tarjeta-acciones">
-                <button className="boton-editar" onClick={() => abrirFormularioEditar(paciente)}>
-                  Editar
+              </span>
+              <span className="col-edad">{paciente.edad ?? '-'}</span>
+              <span className="col-dg">{paciente.diagnostico || '-'}</span>
+              <span className="col-aten">{paciente.atenciones_dia ?? '-'}</span>
+              <span className="col-id">{paciente.cuenta_id || '-'}</span>
+              <span className="col-acciones">
+                <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
+                  ✎
                 </button>
-                <button className="boton-eliminar" onClick={() => eliminarPaciente(paciente)}>
-                  Eliminar
+                <button className="boton-icono eliminar" onClick={() => eliminarPaciente(paciente)} aria-label="Eliminar">
+                  ✕
                 </button>
-              </div>
+              </span>
             </div>
           ))}
         </div>
