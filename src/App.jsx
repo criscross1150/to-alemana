@@ -253,7 +253,7 @@ function App() {
             <span className="col-hab">Hab</span>
             <span className="col-nombre">Nombre</span>
             <span className="col-edad">Edad</span>
-            <span className="col-dg">Diagnóstico</span>
+            <span className="col-dg">Diag.</span>
             <span className="col-aten">At/día</span>
             <span className="col-id">ID</span>
             <span className="col-acciones"></span>
