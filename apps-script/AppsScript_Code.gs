@@ -192,6 +192,18 @@ function subirPacientes(pacientes) {
   Logger.log('Subida pacientes: ' + respuesta.getResponseCode() + ' - ' + respuesta.getContentText());
 }
 
+// Funcion que permite llamar el script desde la app web (boton "Revisar correo nuevo")
+function doGet(e) {
+  try {
+    procesarCorreoDiario();
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, mensaje: 'Procesado correctamente' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, mensaje: String(error) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
 // Funcion para crear el trigger automatico (correr UNA VEZ manualmente)
 function crearTriggerDiario() {
   ScriptApp.newTrigger('procesarCorreoDiario')

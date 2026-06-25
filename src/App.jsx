@@ -37,6 +37,7 @@ function App() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [pacienteEditando, setPacienteEditando] = useState(null)
   const [formulario, setFormulario] = useState(PACIENTE_VACIO)
+  const [revisandoCorreo, setRevisandoCorreo] = useState(false)
 
   useEffect(() => {
     cargarPacientes()
@@ -96,6 +97,23 @@ function App() {
       setPacientes(data)
     }
     setCargando(false)
+  }
+
+  async function revisarCorreoNuevo() {
+    setRevisandoCorreo(true)
+    setError(null)
+    try {
+      const respuesta = await fetch(import.meta.env.VITE_APPS_SCRIPT_URL)
+      const resultado = await respuesta.json()
+      if (!resultado.ok) {
+        setError('No se pudo revisar el correo: ' + resultado.mensaje)
+      }
+    } catch (e) {
+      setError('No se pudo conectar con el revisor de correo. Intenta de nuevo.')
+      console.error(e)
+    }
+    await cargarPacientes()
+    setRevisandoCorreo(false)
   }
 
   function abrirFormularioNuevo() {
@@ -215,6 +233,9 @@ function App() {
         />
         <button className="boton-agregar" onClick={abrirFormularioNuevo}>
           + Agregar paciente
+        </button>
+        <button className="boton-revisar" onClick={revisarCorreoNuevo} disabled={revisandoCorreo}>
+          {revisandoCorreo ? 'Revisando correo...' : '🔄 Revisar correo nuevo'}
         </button>
       </div>
 
