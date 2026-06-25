@@ -18,21 +18,34 @@ body {
 
 .encabezado {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 16px;
+  gap: 12px;
 }
 
 .encabezado h1 {
   font-size: 22px;
   margin: 0;
   color: #0B5FA5;
+  white-space: nowrap;
 }
 
-.fecha {
+.fechas {
+  text-align: right;
+}
+
+.fecha-dato {
   font-size: 14px;
-  color: #5A6472;
+  font-weight: 600;
+  color: #1A1F26;
   margin: 0;
+}
+
+.fecha-actual {
+  font-size: 12px;
+  color: #8A93A0;
+  margin: 2px 0 0 0;
 }
 
 .barra-acciones {

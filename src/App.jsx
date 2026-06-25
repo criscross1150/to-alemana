@@ -10,6 +10,12 @@ function fechaHoy() {
   return `${y}-${m}-${d}`
 }
 
+function formatearFechaLegible(fechaStr) {
+  if (!fechaStr) return ''
+  const [y, m, d] = fechaStr.split('-')
+  return `${d}-${m}-${y}`
+}
+
 const PACIENTE_VACIO = {
   cuenta_id: '',
   nombre: '',
@@ -24,6 +30,7 @@ const PACIENTE_VACIO = {
 
 function App() {
   const [pacientes, setPacientes] = useState([])
+  const [fechaDatos, setFechaDatos] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
@@ -38,27 +45,49 @@ function App() {
   async function cargarPacientes() {
     setCargando(true)
     setError(null)
+
+    // Paso 1: buscar la fecha mas reciente que tenga pacientes registrados
+    const { data: ultimaFechaData, error: errorFecha } = await supabase
+      .from('pacientes')
+      .select('fecha_atencion')
+      .order('fecha_atencion', { ascending: false })
+      .limit(1)
+
+    if (errorFecha) {
+      setError('Error buscando fecha: ' + errorFecha.message)
+      setCargando(false)
+      return
+    }
+
+    if (!ultimaFechaData || ultimaFechaData.length === 0) {
+      setFechaDatos(null)
+      setPacientes([])
+      setCargando(false)
+      return
+    }
+
+    const fechaUltima = ultimaFechaData[0].fecha_atencion
+    setFechaDatos(fechaUltima)
+
+    // Paso 2: cargar todos los pacientes de esa fecha
     const { data, error } = await supabase
       .from('pacientes')
       .select('*')
-      .eq('fecha_atencion', fechaHoy())
+      .eq('fecha_atencion', fechaUltima)
       .order('habitacion', { ascending: true })
 
     if (error) {
-      setError('Error: ' + error.message + ' | code: ' + (error.code || 'sin codigo') + ' | hint: ' + (error.hint || 'sin hint'))
+      setError('Error: ' + error.message)
       console.error(error)
     } else {
       setPacientes(data)
-      if (data.length === 0) {
-        setError('Conexion OK. 0 pacientes con fecha_atencion = ' + fechaHoy() + '. URL: ' + import.meta.env.VITE_SUPABASE_URL)
-      }
     }
     setCargando(false)
   }
 
   function abrirFormularioNuevo() {
     setPacienteEditando(null)
-    setFormulario(PACIENTE_VACIO)
+    setFormulario({ ...PACIENTE_VACIO, fecha_atencion: fechaDatos || fechaHoy() })
     setMostrarFormulario(true)
   }
 
@@ -91,7 +120,7 @@ function App() {
       diagnostico: formulario.diagnostico,
       habitacion: formulario.habitacion,
       atenciones_dia: formulario.atenciones_dia ? parseInt(formulario.atenciones_dia) : null,
-      fecha_atencion: formulario.fecha_atencion || fechaHoy(),
+      fecha_atencion: formulario.fecha_atencion || fechaDatos || fechaHoy(),
       updated_at: new Date().toISOString()
     }
 
@@ -151,7 +180,12 @@ function App() {
     <div className="contenedor">
       <header className="encabezado">
         <h1>TO Alemana</h1>
-        <p className="fecha">{fechaHoy()}</p>
+        <div className="fechas">
+          <p className="fecha-dato">
+            {fechaDatos ? `Pacientes del ${formatearFechaLegible(fechaDatos)}` : 'Sin datos cargados'}
+          </p>
+          <p className="fecha-actual">Hoy: {formatearFechaLegible(fechaHoy())}</p>
+        </div>
       </header>
 
       <div className="barra-acciones">
