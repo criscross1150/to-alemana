@@ -42,6 +42,19 @@ function App() {
     cargarPacientes()
   }, [])
 
+  useEffect(() => {
+    if (mostrarFormulario) {
+      window.history.pushState({ formularioAbierto: true }, '')
+      const manejarAtras = () => {
+        setMostrarFormulario(false)
+        setPacienteEditando(null)
+        setFormulario(PACIENTE_VACIO)
+      }
+      window.addEventListener('popstate', manejarAtras)
+      return () => window.removeEventListener('popstate', manejarAtras)
+    }
+  }, [mostrarFormulario])
+
   async function cargarPacientes() {
     setCargando(true)
     setError(null)
@@ -98,9 +111,13 @@ function App() {
   }
 
   function cerrarFormulario() {
-    setMostrarFormulario(false)
-    setPacienteEditando(null)
-    setFormulario(PACIENTE_VACIO)
+    if (window.history.state?.formularioAbierto) {
+      window.history.back()
+    } else {
+      setMostrarFormulario(false)
+      setPacienteEditando(null)
+      setFormulario(PACIENTE_VACIO)
+    }
   }
 
   function actualizarCampo(campo, valor) {
