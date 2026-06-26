@@ -148,8 +148,9 @@ body {
 }
 
 .id-texto {
-  font-size: 10.5px;
-  color: #8A93A0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0B5FA5;
 }
 
 .fila-encabezado {

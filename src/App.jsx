@@ -251,7 +251,7 @@ function App() {
         <div className="tabla-pacientes">
           <div className="fila-encabezado">
             <span className="col-hab">Hab</span>
-            <span className="col-nombre">Nombre / ID</span>
+            <span className="col-nombre">Nombre / Cta</span>
             <span className="col-edad">Edad</span>
             <span className="col-dg">Diag.</span>
             <span className="col-aten">At.</span>
@@ -264,7 +264,7 @@ function App() {
                 <span className="nombre-texto">
                   {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
                 </span>
-                <span className="id-texto">ID {paciente.cuenta_id || '-'}</span>
+                <span className="id-texto">Cta {paciente.cuenta_id || '-'}</span>
               </span>
               <span className="col-edad">{paciente.edad ?? '-'}</span>
               <span className="col-dg">{paciente.diagnostico || '-'}</span>
