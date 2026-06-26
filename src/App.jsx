@@ -39,6 +39,7 @@ function App() {
   const [pacienteEditando, setPacienteEditando] = useState(null)
   const [formulario, setFormulario] = useState(PACIENTE_VACIO)
   const [revisandoCorreo, setRevisandoCorreo] = useState(false)
+  const [confirmacion, setConfirmacion] = useState(null)
 
   useEffect(() => {
     cargarPacientes()
@@ -140,23 +141,24 @@ function App() {
     await cargarAtenciones(pacientes.map(p => p.id))
   }
 
-  async function desmarcarAtencion(pacienteId, numeroAtencion) {
-    const confirmar = window.confirm('¿Deshacer marcaje de esta atención?')
-    if (!confirmar) return
+  function desmarcarAtencion(pacienteId, numeroAtencion) {
+    setConfirmacion({
+      mensaje: '¿Deshacer marcaje de esta atención?',
+      accion: async () => {
+        const { error } = await supabase
+          .from('atenciones')
+          .delete()
+          .eq('paciente_id', pacienteId)
+          .eq('numero_atencion', numeroAtencion)
 
-    const { error } = await supabase
-      .from('atenciones')
-      .delete()
-      .eq('paciente_id', pacienteId)
-      .eq('numero_atencion', numeroAtencion)
-
-    if (error) {
-      setError('No se pudo deshacer el marcaje. Intenta de nuevo.')
-      console.error(error)
-      return
-    }
-
-    await cargarAtenciones(pacientes.map(p => p.id))
+        if (error) {
+          setError('No se pudo deshacer el marcaje. Intenta de nuevo.')
+          console.error(error)
+          return
+        }
+        await cargarAtenciones(pacientes.map(p => p.id))
+      }
+    })
   }
 
   function formatearHora(horaIso) {
@@ -251,24 +253,23 @@ function App() {
     cargarPacientes()
   }
 
-  async function eliminarPaciente(paciente) {
-    const confirmar = window.confirm(
-      `Eliminar a ${paciente.nombre} ${paciente.apellido}? Esta acción no se puede deshacer.`
-    )
-    if (!confirmar) return
+  function eliminarPaciente(paciente) {
+    setConfirmacion({
+      mensaje: `¿Eliminar a ${paciente.nombre} ${paciente.apellido}? Esta acción no se puede deshacer.`,
+      accion: async () => {
+        const { error } = await supabase
+          .from('pacientes')
+          .delete()
+          .eq('id', paciente.id)
 
-    const { error } = await supabase
-      .from('pacientes')
-      .delete()
-      .eq('id', paciente.id)
-
-    if (error) {
-      setError('No se pudo eliminar. Intenta de nuevo.')
-      console.error(error)
-      return
-    }
-
-    cargarPacientes()
+        if (error) {
+          setError('No se pudo eliminar. Intenta de nuevo.')
+          console.error(error)
+          return
+        }
+        cargarPacientes()
+      }
+    })
   }
 
   const pacientesFiltrados = pacientes.filter(p => {
@@ -467,6 +468,27 @@ function App() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+      {confirmacion && (
+        <div className="superposicion" onClick={() => setConfirmacion(null)}>
+          <div className="modal-confirmacion" onClick={e => e.stopPropagation()}>
+            <p>{confirmacion.mensaje}</p>
+            <div className="formulario-acciones">
+              <button className="boton-cancelar" onClick={() => setConfirmacion(null)}>
+                Cancelar
+              </button>
+              <button
+                className="boton-guardar"
+                onClick={async () => {
+                  await confirmacion.accion()
+                  setConfirmacion(null)
+                }}
+              >
+                Aceptar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

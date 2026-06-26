@@ -336,3 +336,19 @@ body {
   background: #0B5FA5;
   color: white;
 }
+
+.modal-confirmacion {
+  background: white;
+  width: 100%;
+  max-width: 360px;
+  margin: auto 16px;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.modal-confirmacion p {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  color: #1A1F26;
+  line-height: 1.4;
+}
