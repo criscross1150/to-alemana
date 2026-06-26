@@ -198,6 +198,14 @@ body {
   background: #FAFBFC;
 }
 
+.fila-paciente.fila-completa {
+  background: #E8F7EA;
+}
+
+.fila-paciente.fila-completa:nth-child(even) {
+  background: #DFF2E2;
+}
+
 .col-hab {
   font-weight: 700;
   color: #0B5FA5;

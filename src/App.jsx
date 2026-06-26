@@ -330,8 +330,10 @@ function App() {
           {pacientesFiltrados.map(paciente => {
             const totalAtenciones = paciente.atenciones_dia || 1
             const marcadasPaciente = atenciones[paciente.id] || {}
+            const todasMarcadas = Array.from({ length: totalAtenciones }, (_, i) => i + 1)
+              .every(numero => marcadasPaciente[numero])
             return (
-              <div key={paciente.id} className="fila-paciente">
+              <div key={paciente.id} className={`fila-paciente ${todasMarcadas ? 'fila-completa' : ''}`}>
                 <span className="col-hab">{paciente.habitacion || '-'}</span>
                 <span className="col-nombre">
                   <span className="nombre-texto">
