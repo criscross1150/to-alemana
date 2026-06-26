@@ -320,7 +320,6 @@ function App() {
             <span className="col-nombre">Nombre / Cta</span>
             <span className="col-edad">Edad</span>
             <span className="col-dg">Diag.</span>
-            <span className="col-aten">At.</span>
             <span className="col-tickets">Atención</span>
             <span className="col-acciones"></span>
           </div>
@@ -338,7 +337,6 @@ function App() {
                 </span>
                 <span className="col-edad">{paciente.edad ?? '-'}</span>
                 <span className="col-dg">{paciente.diagnostico || '-'}</span>
-                <span className="col-aten">{paciente.atenciones_dia ?? '-'}</span>
                 <span className="col-tickets">
                   {Array.from({ length: totalAtenciones }, (_, i) => i + 1).map(numero => {
                     const horaMarcada = marcadasPaciente[numero]
