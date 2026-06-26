@@ -127,11 +127,29 @@ body {
 .fila-encabezado,
 .fila-paciente {
   display: grid;
-  grid-template-columns: 34px 1.6fr 28px 1fr 32px 50px 56px;
+  grid-template-columns: 32px 1fr 26px 0.85fr 28px 50px;
   gap: 4px;
   align-items: center;
-  padding: 7px 6px;
+  padding: 8px 6px;
   font-size: 12.5px;
+}
+
+.col-nombre {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nombre-texto {
+  font-weight: 600;
+  font-size: 13px;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.id-texto {
+  font-size: 10.5px;
+  color: #8A93A0;
 }
 
 .fila-encabezado {
@@ -158,13 +176,6 @@ body {
   text-align: center;
 }
 
-.col-nombre {
-  font-weight: 600;
-  font-size: 13px;
-  word-break: break-word;
-  line-height: 1.2;
-}
-
 .col-edad {
   text-align: center;
 }
@@ -178,12 +189,6 @@ body {
 
 .col-aten {
   text-align: center;
-}
-
-.col-id {
-  color: #8A93A0;
-  font-size: 11px;
-  word-break: break-word;
 }
 
 .col-acciones {

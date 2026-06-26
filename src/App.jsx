@@ -251,23 +251,24 @@ function App() {
         <div className="tabla-pacientes">
           <div className="fila-encabezado">
             <span className="col-hab">Hab</span>
-            <span className="col-nombre">Nombre</span>
+            <span className="col-nombre">Nombre / ID</span>
             <span className="col-edad">Edad</span>
             <span className="col-dg">Diag.</span>
-            <span className="col-aten">At/día</span>
-            <span className="col-id">ID</span>
+            <span className="col-aten">At.</span>
             <span className="col-acciones"></span>
           </div>
           {pacientesFiltrados.map(paciente => (
             <div key={paciente.id} className="fila-paciente">
               <span className="col-hab">{paciente.habitacion || '-'}</span>
               <span className="col-nombre">
-                {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
+                <span className="nombre-texto">
+                  {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
+                </span>
+                <span className="id-texto">ID {paciente.cuenta_id || '-'}</span>
               </span>
               <span className="col-edad">{paciente.edad ?? '-'}</span>
               <span className="col-dg">{paciente.diagnostico || '-'}</span>
               <span className="col-aten">{paciente.atenciones_dia ?? '-'}</span>
-              <span className="col-id">{paciente.cuenta_id || '-'}</span>
               <span className="col-acciones">
                 <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
                   ✎
