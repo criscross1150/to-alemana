@@ -30,6 +30,7 @@ const PACIENTE_VACIO = {
 
 function App() {
   const [pacientes, setPacientes] = useState([])
+  const [atenciones, setAtenciones] = useState({})
   const [fechaDatos, setFechaDatos] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   const [cargando, setCargando] = useState(true)
@@ -93,10 +94,75 @@ function App() {
     if (error) {
       setError('Error: ' + error.message)
       console.error(error)
-    } else {
-      setPacientes(data)
+      setCargando(false)
+      return
     }
+
+    setPacientes(data)
+    await cargarAtenciones(data.map(p => p.id))
     setCargando(false)
+  }
+
+  async function cargarAtenciones(idsPacientes) {
+    if (!idsPacientes || idsPacientes.length === 0) {
+      setAtenciones({})
+      return
+    }
+    const { data, error } = await supabase
+      .from('atenciones')
+      .select('*')
+      .in('paciente_id', idsPacientes)
+
+    if (error) {
+      console.error('Error cargando atenciones:', error)
+      return
+    }
+
+    const mapa = {}
+    data.forEach(a => {
+      if (!mapa[a.paciente_id]) mapa[a.paciente_id] = {}
+      mapa[a.paciente_id][a.numero_atencion] = a.hora_marcaje
+    })
+    setAtenciones(mapa)
+  }
+
+  async function marcarAtencion(pacienteId, numeroAtencion) {
+    const { error } = await supabase
+      .from('atenciones')
+      .insert([{ paciente_id: pacienteId, numero_atencion: numeroAtencion }])
+
+    if (error) {
+      setError('No se pudo marcar la atención. Intenta de nuevo.')
+      console.error(error)
+      return
+    }
+
+    await cargarAtenciones(pacientes.map(p => p.id))
+  }
+
+  async function desmarcarAtencion(pacienteId, numeroAtencion) {
+    const confirmar = window.confirm('¿Deshacer marcaje de esta atención?')
+    if (!confirmar) return
+
+    const { error } = await supabase
+      .from('atenciones')
+      .delete()
+      .eq('paciente_id', pacienteId)
+      .eq('numero_atencion', numeroAtencion)
+
+    if (error) {
+      setError('No se pudo deshacer el marcaje. Intenta de nuevo.')
+      console.error(error)
+      return
+    }
+
+    await cargarAtenciones(pacientes.map(p => p.id))
+  }
+
+  function formatearHora(horaIso) {
+    if (!horaIso) return ''
+    const fecha = new Date(horaIso)
+    return fecha.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
   }
 
   async function revisarCorreoNuevo() {
@@ -255,30 +321,53 @@ function App() {
             <span className="col-edad">Edad</span>
             <span className="col-dg">Diag.</span>
             <span className="col-aten">At.</span>
+            <span className="col-tickets">Atención</span>
             <span className="col-acciones"></span>
           </div>
-          {pacientesFiltrados.map(paciente => (
-            <div key={paciente.id} className="fila-paciente">
-              <span className="col-hab">{paciente.habitacion || '-'}</span>
-              <span className="col-nombre">
-                <span className="nombre-texto">
-                  {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
+          {pacientesFiltrados.map(paciente => {
+            const totalAtenciones = paciente.atenciones_dia || 1
+            const marcadasPaciente = atenciones[paciente.id] || {}
+            return (
+              <div key={paciente.id} className="fila-paciente">
+                <span className="col-hab">{paciente.habitacion || '-'}</span>
+                <span className="col-nombre">
+                  <span className="nombre-texto">
+                    {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
+                  </span>
+                  <span className="id-texto">Cta {paciente.cuenta_id || '-'}</span>
                 </span>
-                <span className="id-texto">Cta {paciente.cuenta_id || '-'}</span>
-              </span>
-              <span className="col-edad">{paciente.edad ?? '-'}</span>
-              <span className="col-dg">{paciente.diagnostico || '-'}</span>
-              <span className="col-aten">{paciente.atenciones_dia ?? '-'}</span>
-              <span className="col-acciones">
-                <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
-                  ✎
-                </button>
-                <button className="boton-icono eliminar" onClick={() => eliminarPaciente(paciente)} aria-label="Eliminar">
-                  ✕
-                </button>
-              </span>
-            </div>
-          ))}
+                <span className="col-edad">{paciente.edad ?? '-'}</span>
+                <span className="col-dg">{paciente.diagnostico || '-'}</span>
+                <span className="col-aten">{paciente.atenciones_dia ?? '-'}</span>
+                <span className="col-tickets">
+                  {Array.from({ length: totalAtenciones }, (_, i) => i + 1).map(numero => {
+                    const horaMarcada = marcadasPaciente[numero]
+                    return (
+                      <button
+                        key={numero}
+                        className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'}`}
+                        onClick={() =>
+                          horaMarcada
+                            ? desmarcarAtencion(paciente.id, numero)
+                            : marcarAtencion(paciente.id, numero)
+                        }
+                      >
+                        {horaMarcada ? `✓ ${formatearHora(horaMarcada)}` : `${numero}ª`}
+                      </button>
+                    )
+                  })}
+                </span>
+                <span className="col-acciones">
+                  <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
+                    ✎
+                  </button>
+                  <button className="boton-icono eliminar" onClick={() => eliminarPaciente(paciente)} aria-label="Eliminar">
+                    ✕
+                  </button>
+                </span>
+              </div>
+            )
+          })}
         </div>
       )}
 
@@ -344,9 +433,10 @@ function App() {
             </label>
 
             <label>
-              Atenciones por día
+              Atenciones indicadas por día
               <input
                 type="number"
+                min="1"
                 value={formulario.atenciones_dia}
                 onChange={e => actualizarCampo('atenciones_dia', e.target.value)}
               />

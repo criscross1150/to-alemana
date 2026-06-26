@@ -127,11 +127,38 @@ body {
 .fila-encabezado,
 .fila-paciente {
   display: grid;
-  grid-template-columns: 32px 1fr 26px 0.85fr 28px 50px;
+  grid-template-columns: 30px 0.95fr 24px 0.7fr auto 50px;
   gap: 4px;
   align-items: center;
   padding: 8px 6px;
   font-size: 12.5px;
+}
+
+.col-tickets {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: stretch;
+}
+
+.ticket {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.ticket-pendiente {
+  background: #FCEFD9;
+  color: #9A5B00;
+}
+
+.ticket-hecho {
+  background: #E1F5E5;
+  color: #1C7C3C;
 }
 
 .col-nombre {

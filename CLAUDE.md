@@ -40,7 +40,20 @@ App web para gestionar lista diaria de pacientes atendidos en Clínica Alemana T
 
 RLS habilitado, policy abierta (sin login por ahora).
 
-## Mapeo de diagnósticos (código → texto)
+## Estructura tabla `atenciones` (Supabase)
+
+Registra el marcaje horario de cada atención realizada a un paciente. Permite múltiples atenciones por día (ej: paciente con `atenciones_dia = 2` tendrá hasta 2 registros).
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| id | uuid (auto) | clave primaria |
+| paciente_id | uuid | referencia a `pacientes.id`, borrado en cascada |
+| numero_atencion | int | 1, 2, etc. (cuál de las atenciones del día) |
+| hora_marcaje | timestamp (auto) | momento exacto en que se marcó la atención como realizada |
+
+Constraint único: (`paciente_id`, `numero_atencion`) — evita marcar dos veces la misma atención.
+
+En la app: cada paciente muestra un "ticket" por cada atención indicada (según `atenciones_dia`). Ticket pendiente = naranja, sin hora. Al tocarlo, se marca y muestra la hora exacta (ej: "✓ 14:32"). Tocar de nuevo permite deshacer el marcaje (con confirmación). Esto permite registrar el horario real de atención para uso posterior en la ficha clínica del paciente.
 
 El Excel usa códigos numéricos en columna J. El script `AppsScript_Code.gs` traduce automáticamente vía diccionario `DIAGNOSTICOS`:
 
