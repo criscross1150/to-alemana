@@ -206,6 +206,14 @@ body {
   background: #DFF2E2;
 }
 
+.fila-paciente.fila-parcial {
+  background: #FBF3DC;
+}
+
+.fila-paciente.fila-parcial:nth-child(even) {
+  background: #F7ECC9;
+}
+
 .col-hab {
   font-weight: 700;
   color: #0B5FA5;

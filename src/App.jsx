@@ -330,10 +330,13 @@ function App() {
           {pacientesFiltrados.map(paciente => {
             const totalAtenciones = paciente.atenciones_dia || 1
             const marcadasPaciente = atenciones[paciente.id] || {}
-            const todasMarcadas = Array.from({ length: totalAtenciones }, (_, i) => i + 1)
-              .every(numero => marcadasPaciente[numero])
+            const numerosAtencion = Array.from({ length: totalAtenciones }, (_, i) => i + 1)
+            const cantidadMarcadas = numerosAtencion.filter(n => marcadasPaciente[n]).length
+            const todasMarcadas = cantidadMarcadas === totalAtenciones
+            const algunasMarcadas = cantidadMarcadas > 0 && !todasMarcadas
+            const claseFila = todasMarcadas ? 'fila-completa' : algunasMarcadas ? 'fila-parcial' : ''
             return (
-              <div key={paciente.id} className={`fila-paciente ${todasMarcadas ? 'fila-completa' : ''}`}>
+              <div key={paciente.id} className={`fila-paciente ${claseFila}`}>
                 <span className="col-hab">{paciente.habitacion || '-'}</span>
                 <span className="col-nombre">
                   <span className="nombre-texto">
@@ -344,7 +347,7 @@ function App() {
                 <span className="col-edad">{paciente.edad ?? '-'}</span>
                 <span className="col-dg">{paciente.diagnostico || '-'}</span>
                 <span className="col-tickets">
-                  {Array.from({ length: totalAtenciones }, (_, i) => i + 1).map(numero => {
+                  {numerosAtencion.map(numero => {
                     const horaMarcada = marcadasPaciente[numero]
                     return (
                       <button
