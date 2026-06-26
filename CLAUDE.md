@@ -55,6 +55,8 @@ Constraint único: (`paciente_id`, `numero_atencion`) — evita marcar dos veces
 
 En la app: cada paciente muestra un "ticket" por cada atención indicada (según `atenciones_dia`). Ticket pendiente = naranja, sin hora. Al tocarlo, se marca y muestra la hora exacta (ej: "✓ 14:32"). Tocar de nuevo permite deshacer el marcaje (con confirmación). Esto permite registrar el horario real de atención para uso posterior en la ficha clínica del paciente.
 
+**Nota técnica zona horaria:** el horario se guarda en UTC en Supabase. La app resta manualmente 4 horas (offset fijo) para mostrar hora de Chile, porque `timeZone: 'America/Santiago'` vía `toLocaleTimeString` no funcionó de forma confiable en el navegador/WebView del usuario. Este offset fijo (-4) es correcto en horario de invierno chileno. Cuando Chile cambie a horario de verano (~septiembre), habrá que actualizar el offset a -3 en la función `formatearHora` de `App.jsx`.
+
 El Excel usa códigos numéricos en columna J. El script `AppsScript_Code.gs` traduce automáticamente vía diccionario `DIAGNOSTICOS`:
 
 1=Neumonia, 2=Cirugía abdominal laparoscópica, 3=Cirugía abdominal laparotomía, 4=Cirugía tórax, 5=ITU, 6=Trauma raquimedular, 7=Trombosis, 8=Sepsis, 9=ACV, 10=Neuroquirúrgico, 12=Hipoxia perinatal, 13=SBO pediátrico, 14=ATL, 15=Cardiológico, 16=Cáncer, 17=Prótesis de cadera, 18=Prótesis de rodilla, 19=Otro, 20=Plastía de cadera, 21=Plastía de rodilla, 22=TEC, 23=PTM, 24=Paratiroidectomía, 25=Cirugía plástica, 26=EPOC/Respiratorio crónico, 27=RNPT, 28=Cirugía columna, 29=Síndrome convulsivo, 30=Falla renal, 31=Traumatológico, 32=Psiquiatría.

@@ -164,11 +164,14 @@ function App() {
   function formatearHora(horaIso) {
     if (!horaIso) return ''
     const fecha = new Date(horaIso)
-    return fecha.toLocaleTimeString('es-CL', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'America/Santiago'
-    })
+    // Chile usa UTC-4 en horario de invierno (abr-sep aprox) y UTC-3 en horario de verano.
+    // Se resta 4 horas manualmente porque toLocaleTimeString con timeZone IANA
+    // no funciona de forma confiable en todos los navegadores/WebViews moviles.
+    const offsetHorasChile = 4
+    const fechaChile = new Date(fecha.getTime() - offsetHorasChile * 60 * 60 * 1000)
+    const horas = String(fechaChile.getUTCHours()).padStart(2, '0')
+    const minutos = String(fechaChile.getUTCMinutes()).padStart(2, '0')
+    return `${horas}:${minutos}`
   }
 
   async function revisarCorreoNuevo() {
