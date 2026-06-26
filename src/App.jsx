@@ -162,7 +162,11 @@ function App() {
   function formatearHora(horaIso) {
     if (!horaIso) return ''
     const fecha = new Date(horaIso)
-    return fecha.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+    return fecha.toLocaleTimeString('es-CL', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Santiago'
+    })
   }
 
   async function revisarCorreoNuevo() {
