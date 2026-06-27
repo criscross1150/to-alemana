@@ -53,8 +53,31 @@ function procesarCorreoDiario() {
     return;
   }
 
-  const mensajes = hilos[0].getMessages();
-  const ultimoMensaje = mensajes[mensajes.length - 1];
+  // Recopilar todos los mensajes con adjunto de TODOS los hilos encontrados,
+  // y quedarse con el mas reciente (por fecha real del mensaje, no del hilo)
+  let mensajeMasReciente = null;
+  for (const hilo of hilos) {
+    const mensajesHilo = hilo.getMessages();
+    for (const msg of mensajesHilo) {
+      const tieneExcel = msg.getAttachments().some(a => {
+        const n = a.getName().toLowerCase();
+        return n.endsWith('.xlsx') || n.endsWith('.xls');
+      });
+      if (tieneExcel) {
+        if (!mensajeMasReciente || msg.getDate() > mensajeMasReciente.getDate()) {
+          mensajeMasReciente = msg;
+        }
+      }
+    }
+  }
+
+  if (!mensajeMasReciente) {
+    Logger.log('No se encontro ningun mensaje con Excel adjunto');
+    return;
+  }
+
+  Logger.log('Correo seleccionado, fecha: ' + mensajeMasReciente.getDate());
+  const ultimoMensaje = mensajeMasReciente;
   const adjuntos = ultimoMensaje.getAttachments();
 
   let archivoExcel = null;
