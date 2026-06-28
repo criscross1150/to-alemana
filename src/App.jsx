@@ -41,11 +41,13 @@ function App() {
   const [pacienteEditando, setPacienteEditando] = useState(null)
   const [formulario, setFormulario] = useState(PACIENTE_VACIO)
   const [revisandoCorreo, setRevisandoCorreo] = useState(false)
+  const [revisandoAlAbrir, setRevisandoAlAbrir] = useState(false)
   const [promptInstalacion, setPromptInstalacion] = useState(null)
   const [confirmacion, setConfirmacion] = useState(null)
 
   useEffect(() => {
     cargarPacientes()
+    revisarCorreoAlAbrir()
   }, [])
 
   useEffect(() => {
@@ -223,6 +225,20 @@ function App() {
     })
   }
 
+  async function revisarCorreoAlAbrir() {
+    setRevisandoAlAbrir(true)
+    try {
+      const respuesta = await fetch(import.meta.env.VITE_APPS_SCRIPT_URL)
+      const resultado = await respuesta.json()
+      if (resultado.ok) {
+        await cargarPacientes()
+      }
+    } catch (e) {
+      console.error('Revision automatica al abrir fallo (silenciosa):', e)
+    }
+    setRevisandoAlAbrir(false)
+  }
+
   async function revisarCorreoNuevo() {
     setRevisandoCorreo(true)
     setError(null)
@@ -354,6 +370,7 @@ function App() {
             {fechaDatos ? `Pacientes del ${formatearFechaLegible(fechaDatos)}` : 'Sin datos cargados'}
           </p>
           <p className="fecha-actual">Hoy: {formatearFechaLegible(fechaHoy())}</p>
+          {revisandoAlAbrir && <p className="indicador-sync">Buscando actualizaciones...</p>}
         </div>
       </header>
 
