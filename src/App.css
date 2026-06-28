@@ -79,6 +79,78 @@ body {
   opacity: 0.45;
 }
 
+.swipe-contenedor {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.swipe-contenedor .fila-paciente {
+  position: relative;
+  z-index: 2;
+  background: #fff;
+  transition: transform 0.15s ease-out;
+  cursor: grab;
+}
+
+.swipe-contenedor .fila-paciente.arrastrando {
+  transition: none;
+  cursor: grabbing;
+}
+
+.swipe-fondo-icono {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  width: 90px;
+  z-index: 1;
+}
+
+.swipe-fondo-izq {
+  left: 0;
+  color: #A12424;
+}
+
+.swipe-fondo-der {
+  right: 0;
+  color: #1C7C3C;
+}
+
+.fondo-swipe-verde {
+  background: #E1F5E5;
+}
+
+.fondo-swipe-rojo {
+  background: #FCE8E8;
+}
+
+.seccion-resueltos {
+  margin-top: 14px;
+}
+
+.boton-toggle-resueltos {
+  width: 100%;
+  padding: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #EEF0F2;
+  color: #5A6472;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.tabla-resueltos {
+  opacity: 0.85;
+}
+
 .encabezado {
   display: flex;
   align-items: flex-start;

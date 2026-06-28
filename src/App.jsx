@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useDrag } from '@use-gesture/react'
 import { supabase } from './supabaseClient'
 import { BedDouble, Pencil, X, Plus, RefreshCw, Download, Clock, CheckCircle2, Search } from 'lucide-react'
 import './App.css'
@@ -29,6 +30,57 @@ const PACIENTE_VACIO = {
   fecha_atencion: fechaHoy()
 }
 
+function FilaSwipeable({ children, onSwipeRight, onSwipeLeft, deshabilitado, claseExtra }) {
+  const [offset, setOffset] = useState(0)
+  const [arrastrando, setArrastrando] = useState(false)
+  const UMBRAL = 90
+
+  const bind = useDrag(({ down, movement: [mx], direction: [dx], velocity: [vx] }) => {
+    if (deshabilitado) return
+    setArrastrando(down)
+    if (down) {
+      setOffset(mx)
+    } else {
+      const distancia = Math.abs(mx)
+      const rapido = vx > 0.5 && distancia > 40
+      if ((distancia > UMBRAL || rapido) && dx > 0) {
+        setOffset(500)
+        setTimeout(() => onSwipeRight(), 150)
+      } else if ((distancia > UMBRAL || rapido) && dx < 0) {
+        setOffset(-500)
+        setTimeout(() => onSwipeLeft(), 150)
+      } else {
+        setOffset(0)
+      }
+    }
+  })
+
+  const fondoColor = offset > 20 ? 'fondo-swipe-verde' : offset < -20 ? 'fondo-swipe-rojo' : ''
+
+  return (
+    <div className={`swipe-contenedor ${fondoColor}`}>
+      <div className="swipe-fondo-icono swipe-fondo-izq">
+        <X size={20} strokeWidth={2.5} />
+        <span>Refuerzo</span>
+      </div>
+      <div className="swipe-fondo-icono swipe-fondo-der">
+        <CheckCircle2 size={20} strokeWidth={2.5} />
+        <span>Atendido</span>
+      </div>
+      <div
+        {...(deshabilitado ? {} : bind())}
+        className={`fila-paciente ${claseExtra} ${arrastrando ? 'arrastrando' : ''}`}
+        style={{
+          transform: `translateX(${offset}px)`,
+          touchAction: deshabilitado ? 'auto' : 'pan-y'
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [perfil, setPerfil] = useState(null)
   const [pacientes, setPacientes] = useState([])
@@ -46,6 +98,7 @@ function App() {
   const [revisandoAlAbrir, setRevisandoAlAbrir] = useState(false)
   const [promptInstalacion, setPromptInstalacion] = useState(null)
   const [confirmacion, setConfirmacion] = useState(null)
+  const [mostrarResueltos, setMostrarResueltos] = useState(false)
 
   useEffect(() => {
     cargarPacientes()
@@ -189,14 +242,11 @@ function App() {
     return asignaciones[pacienteId]?.[numeroAtencion] || 'titular'
   }
 
-  async function cambiarAsignacion(pacienteId, numeroAtencion) {
-    const actual = obtenerAsignacion(pacienteId, numeroAtencion)
-    const nueva = actual === 'titular' ? 'refuerzo' : 'titular'
-
+  async function asignarA(pacienteId, numeroAtencion, valor) {
     const { error } = await supabase
       .from('asignaciones')
       .upsert(
-        { paciente_id: pacienteId, numero_atencion: numeroAtencion, asignado_a: nueva, updated_at: new Date().toISOString() },
+        { paciente_id: pacienteId, numero_atencion: numeroAtencion, asignado_a: valor, updated_at: new Date().toISOString() },
         { onConflict: 'paciente_id,numero_atencion' }
       )
 
@@ -207,6 +257,16 @@ function App() {
     }
 
     await cargarAsignaciones(pacientes.map(p => p.id))
+  }
+
+  async function cambiarAsignacion(pacienteId, numeroAtencion) {
+    const actual = obtenerAsignacion(pacienteId, numeroAtencion)
+    const nueva = actual === 'titular' ? 'refuerzo' : 'titular'
+    await asignarA(pacienteId, numeroAtencion, nueva)
+  }
+
+  async function cambiarAsignacionForzada(pacienteId, numeroAtencion, valor) {
+    await asignarA(pacienteId, numeroAtencion, valor)
   }
 
   async function cargarAtenciones(idsPacientes) {
@@ -462,6 +522,108 @@ function App() {
   const contadorTitular = calcularContadores('titular')
   const contadorRefuerzo = calcularContadores('refuerzo')
 
+  function pacienteEstaResuelto(paciente) {
+    const totalAtenciones = paciente.atenciones_dia || 1
+    const marcadasPaciente = atenciones[paciente.id] || {}
+    const numerosAtencion = Array.from({ length: totalAtenciones }, (_, i) => i + 1)
+    // Resuelto para mi vista si: todas sus atenciones de MI perfil estan marcadas,
+    // y no tiene atenciones pendientes asignadas a mi perfil
+    const atencionesDeMiPerfil = numerosAtencion.filter(n => obtenerAsignacion(paciente.id, n) === perfil)
+    if (atencionesDeMiPerfil.length === 0) {
+      // Si nada le corresponde a mi perfil (todo fue derivado al otro), no aparece como pendiente para mi
+      return true
+    }
+    return atencionesDeMiPerfil.every(n => marcadasPaciente[n])
+  }
+
+  const pacientesActivosLista = pacientesFiltrados.filter(p => !pacienteEstaResuelto(p))
+  const pacientesResueltos = pacientesFiltrados.filter(p => pacienteEstaResuelto(p))
+
+  function renderizarFilaPaciente(paciente, esResuelto = false) {
+    const totalAtenciones = paciente.atenciones_dia || 1
+    const marcadasPaciente = atenciones[paciente.id] || {}
+    const numerosAtencion = Array.from({ length: totalAtenciones }, (_, i) => i + 1)
+    const cantidadMarcadas = numerosAtencion.filter(n => marcadasPaciente[n]).length
+    const todasMarcadas = cantidadMarcadas === totalAtenciones
+    const algunasMarcadas = cantidadMarcadas > 0 && !todasMarcadas
+    const claseFila = todasMarcadas ? 'fila-completa' : algunasMarcadas ? 'fila-parcial' : ''
+
+    const esSwipeable = totalAtenciones === 1 && !esResuelto && obtenerAsignacion(paciente.id, 1) === perfil
+
+    const contenidoFila = (
+      <>
+        <span className="col-hab">{paciente.habitacion || '-'}</span>
+        <span className="col-nombre">
+          <span className="nombre-texto">
+            {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
+          </span>
+          <span className="id-texto">Cta {paciente.cuenta_id || '-'}</span>
+        </span>
+        <span className="col-edad">{paciente.edad ?? '-'}</span>
+        <span className="col-dg">{paciente.diagnostico || '-'}</span>
+        <span className="col-tickets">
+          {numerosAtencion.map(numero => {
+            const horaMarcada = marcadasPaciente[numero]
+            const asignacion = obtenerAsignacion(paciente.id, numero)
+            const esRefuerzo = asignacion === 'refuerzo'
+            const noEsMio = asignacion !== perfil
+            return (
+              <button
+                key={numero}
+                className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''} ${noEsMio ? 'ticket-no-mio' : ''}`}
+                onClick={() => manejarClicTicket(paciente.id, numero, horaMarcada)}
+                onTouchStart={() => iniciarToqueLargo(paciente.id, numero)}
+                onTouchEnd={cancelarToqueLargo}
+                onMouseDown={() => iniciarToqueLargo(paciente.id, numero)}
+                onMouseUp={cancelarToqueLargo}
+                onMouseLeave={cancelarToqueLargo}
+              >
+                {horaMarcada ? (
+                  <>
+                    <CheckCircle2 size={12} strokeWidth={2.3} /> {formatearHora(horaMarcada)}
+                  </>
+                ) : (
+                  <>
+                    <Clock size={12} strokeWidth={2.3} /> {numero}ª
+                  </>
+                )}
+                {esRefuerzo && <span className="etiqueta-refuerzo">R</span>}
+              </button>
+            )
+          })}
+        </span>
+        <span className="col-acciones">
+          <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
+            <Pencil size={13} strokeWidth={2.3} />
+          </button>
+          <button className="boton-icono eliminar" onClick={() => eliminarPaciente(paciente)} aria-label="Eliminar">
+            <X size={14} strokeWidth={2.5} />
+          </button>
+        </span>
+      </>
+    )
+
+    if (esSwipeable) {
+      return (
+        <FilaSwipeable
+          key={paciente.id}
+          claseExtra={claseFila}
+          deshabilitado={false}
+          onSwipeRight={() => marcarAtencion(paciente.id, 1)}
+          onSwipeLeft={() => cambiarAsignacionForzada(paciente.id, 1, 'refuerzo')}
+        >
+          {contenidoFila}
+        </FilaSwipeable>
+      )
+    }
+
+    return (
+      <div key={paciente.id} className={`fila-paciente ${claseFila}`}>
+        {contenidoFila}
+      </div>
+    )
+  }
+
   if (!perfil) {
     return (
       <div className="contenedor pantalla-perfil">
@@ -570,77 +732,35 @@ function App() {
           {busqueda ? 'No hay pacientes que coincidan.' : 'No hay pacientes registrados hoy.'}
         </p>
       ) : (
-        <div className="tabla-pacientes">
-          <div className="fila-encabezado">
-            <span className="col-hab"><BedDouble size={13} strokeWidth={2.2} /></span>
-            <span className="col-nombre">Nombre / Cta</span>
-            <span className="col-edad">Edad</span>
-            <span className="col-dg">Diag.</span>
-            <span className="col-tickets">Atención</span>
-            <span className="col-acciones"></span>
+        <>
+          <div className="tabla-pacientes">
+            <div className="fila-encabezado">
+              <span className="col-hab"><BedDouble size={13} strokeWidth={2.2} /></span>
+              <span className="col-nombre">Nombre / Cta</span>
+              <span className="col-edad">Edad</span>
+              <span className="col-dg">Diag.</span>
+              <span className="col-tickets">Atención</span>
+              <span className="col-acciones"></span>
+            </div>
+            {pacientesActivosLista.map(paciente => renderizarFilaPaciente(paciente))}
           </div>
-          {pacientesFiltrados.map(paciente => {
-            const totalAtenciones = paciente.atenciones_dia || 1
-            const marcadasPaciente = atenciones[paciente.id] || {}
-            const numerosAtencion = Array.from({ length: totalAtenciones }, (_, i) => i + 1)
-            const cantidadMarcadas = numerosAtencion.filter(n => marcadasPaciente[n]).length
-            const todasMarcadas = cantidadMarcadas === totalAtenciones
-            const algunasMarcadas = cantidadMarcadas > 0 && !todasMarcadas
-            const claseFila = todasMarcadas ? 'fila-completa' : algunasMarcadas ? 'fila-parcial' : ''
-            return (
-              <div key={paciente.id} className={`fila-paciente ${claseFila}`}>
-                <span className="col-hab">{paciente.habitacion || '-'}</span>
-                <span className="col-nombre">
-                  <span className="nombre-texto">
-                    {paciente.nombre} {paciente.apellido} {paciente.apellido_materno}
-                  </span>
-                  <span className="id-texto">Cta {paciente.cuenta_id || '-'}</span>
-                </span>
-                <span className="col-edad">{paciente.edad ?? '-'}</span>
-                <span className="col-dg">{paciente.diagnostico || '-'}</span>
-                <span className="col-tickets">
-                  {numerosAtencion.map(numero => {
-                    const horaMarcada = marcadasPaciente[numero]
-                    const asignacion = obtenerAsignacion(paciente.id, numero)
-                    const esRefuerzo = asignacion === 'refuerzo'
-                    const noEsMio = asignacion !== perfil
-                    return (
-                      <button
-                        key={numero}
-                        className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''} ${noEsMio ? 'ticket-no-mio' : ''}`}
-                        onClick={() => manejarClicTicket(paciente.id, numero, horaMarcada)}
-                        onTouchStart={() => iniciarToqueLargo(paciente.id, numero)}
-                        onTouchEnd={cancelarToqueLargo}
-                        onMouseDown={() => iniciarToqueLargo(paciente.id, numero)}
-                        onMouseUp={cancelarToqueLargo}
-                        onMouseLeave={cancelarToqueLargo}
-                      >
-                        {horaMarcada ? (
-                          <>
-                            <CheckCircle2 size={12} strokeWidth={2.3} /> {formatearHora(horaMarcada)}
-                          </>
-                        ) : (
-                          <>
-                            <Clock size={12} strokeWidth={2.3} /> {numero}ª
-                          </>
-                        )}
-                        {esRefuerzo && <span className="etiqueta-refuerzo">R</span>}
-                      </button>
-                    )
-                  })}
-                </span>
-                <span className="col-acciones">
-                  <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
-                    <Pencil size={13} strokeWidth={2.3} />
-                  </button>
-                  <button className="boton-icono eliminar" onClick={() => eliminarPaciente(paciente)} aria-label="Eliminar">
-                    <X size={14} strokeWidth={2.5} />
-                  </button>
-                </span>
-              </div>
-            )
-          })}
-        </div>
+
+          {pacientesResueltos.length > 0 && (
+            <div className="seccion-resueltos">
+              <button
+                className="boton-toggle-resueltos"
+                onClick={() => setMostrarResueltos(!mostrarResueltos)}
+              >
+                {mostrarResueltos ? '▲' : '▼'} Resueltos / derivados ({pacientesResueltos.length})
+              </button>
+              {mostrarResueltos && (
+                <div className="tabla-pacientes tabla-resueltos">
+                  {pacientesResueltos.map(paciente => renderizarFilaPaciente(paciente, true))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {promptInstalacion && (
