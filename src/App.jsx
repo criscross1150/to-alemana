@@ -39,11 +39,28 @@ function App() {
   const [pacienteEditando, setPacienteEditando] = useState(null)
   const [formulario, setFormulario] = useState(PACIENTE_VACIO)
   const [revisandoCorreo, setRevisandoCorreo] = useState(false)
+  const [promptInstalacion, setPromptInstalacion] = useState(null)
   const [confirmacion, setConfirmacion] = useState(null)
 
   useEffect(() => {
     cargarPacientes()
   }, [])
+
+  useEffect(() => {
+    const manejarPromptInstalacion = (e) => {
+      e.preventDefault()
+      setPromptInstalacion(e)
+    }
+    window.addEventListener('beforeinstallprompt', manejarPromptInstalacion)
+    return () => window.removeEventListener('beforeinstallprompt', manejarPromptInstalacion)
+  }, [])
+
+  async function instalarApp() {
+    if (!promptInstalacion) return
+    promptInstalacion.prompt()
+    await promptInstalacion.userChoice
+    setPromptInstalacion(null)
+  }
 
   const pacientesRef = useRef(pacientes)
   useEffect(() => {
@@ -341,6 +358,11 @@ function App() {
         <button className="boton-revisar" onClick={revisarCorreoNuevo} disabled={revisandoCorreo}>
           {revisandoCorreo ? 'Revisando correo...' : '🔄 Revisar correo nuevo'}
         </button>
+        {promptInstalacion && (
+          <button className="boton-instalar" onClick={instalarApp}>
+            ⬇ Instalar app en este dispositivo
+          </button>
+        )}
       </div>
 
       {error && <div className="mensaje-error">{error}</div>}
