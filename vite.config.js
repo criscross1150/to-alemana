@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'TO Alemana',
-        short_name: 'TO Alemana',
+        name: 'TO CAT',
+        short_name: 'TO CAT',
         description: 'Gestión diaria de pacientes - Clínica Alemana Temuco',
         theme_color: '#0B5FA5',
         background_color: '#F4F6F8',

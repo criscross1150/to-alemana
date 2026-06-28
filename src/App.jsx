@@ -318,7 +318,7 @@ function App() {
   return (
     <div className="contenedor">
       <header className="encabezado">
-        <h1>TO Alemana</h1>
+        <h1>TO CAT</h1>
         <div className="fechas">
           <p className="fecha-dato">
             {fechaDatos ? `Pacientes del ${formatearFechaLegible(fechaDatos)}` : 'Sin datos cargados'}
