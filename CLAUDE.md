@@ -81,7 +81,24 @@ Nota: código 11 no existe en la fuente original (salto intencional, confirmado 
 - Debe poder leerse el correo "en cualquier momento" (botón o ejecución manual del script, no solo automático)
 - Trigger automático configurado a las 6:00 AM diario
 
-## Scripts SQL ejecutados en Supabase (historial)
+## Sistema Titular / Refuerzo
+
+Permite delegar atenciones individuales (no pacientes completos) entre dos TO simultáneos: Titular y Refuerzo. Una misma persona puede tener su 1ª atención asignada al Titular y su 2ª atención al Refuerzo.
+
+**Tabla `asignaciones`:**
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| id | uuid | clave primaria |
+| paciente_id | uuid | referencia a pacientes |
+| numero_atencion | int | 1, 2, etc. |
+| asignado_a | text | 'titular' (default) o 'refuerzo' |
+
+Constraint único (`paciente_id`, `numero_atencion`).
+
+**Interacción en la app:** mantener presionado un ticket de atención (~550ms) reasigna esa atención entre Titular y Refuerzo. El ticket muestra un distintivo morado ("R") cuando está asignado a Refuerzo. Toque corto sigue marcando/desmarcando la atención como siempre.
+
+**Contadores:** la barra de progreso muestra dos líneas separadas — atenciones del Titular y del Refuerzo — cada una con su propio conteo de marcadas/total. Si el Titular supera 10 atenciones, aparece un ícono de advertencia (referencial, no bloqueante) como recordatorio de delegar al Refuerzo.
 
 Todos corridos manualmente en SQL Editor de Supabase. Carpeta `supabase-sql/` guarda los que quedaron disponibles.
 

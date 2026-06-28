@@ -32,6 +32,7 @@ const PACIENTE_VACIO = {
 function App() {
   const [pacientes, setPacientes] = useState([])
   const [atenciones, setAtenciones] = useState({})
+  const [asignaciones, setAsignaciones] = useState({})
   const [fechaDatos, setFechaDatos] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   const [busquedaAbierta, setBusquedaAbierta] = useState(false)
@@ -86,9 +87,17 @@ function App() {
       })
       .subscribe()
 
+    const canalAsignaciones = supabase
+      .channel('cambios-asignaciones')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'asignaciones' }, () => {
+        cargarAsignaciones(pacientesRef.current.map(p => p.id))
+      })
+      .subscribe()
+
     return () => {
       supabase.removeChannel(canalPacientes)
       supabase.removeChannel(canalAtenciones)
+      supabase.removeChannel(canalAsignaciones)
     }
   }, [])
 
@@ -148,7 +157,55 @@ function App() {
 
     setPacientes(data)
     await cargarAtenciones(data.map(p => p.id))
+    await cargarAsignaciones(data.map(p => p.id))
     setCargando(false)
+  }
+
+  async function cargarAsignaciones(idsPacientes) {
+    if (!idsPacientes || idsPacientes.length === 0) {
+      setAsignaciones({})
+      return
+    }
+    const { data, error } = await supabase
+      .from('asignaciones')
+      .select('*')
+      .in('paciente_id', idsPacientes)
+
+    if (error) {
+      console.error('Error cargando asignaciones:', error)
+      return
+    }
+
+    const mapa = {}
+    data.forEach(a => {
+      if (!mapa[a.paciente_id]) mapa[a.paciente_id] = {}
+      mapa[a.paciente_id][a.numero_atencion] = a.asignado_a
+    })
+    setAsignaciones(mapa)
+  }
+
+  function obtenerAsignacion(pacienteId, numeroAtencion) {
+    return asignaciones[pacienteId]?.[numeroAtencion] || 'titular'
+  }
+
+  async function cambiarAsignacion(pacienteId, numeroAtencion) {
+    const actual = obtenerAsignacion(pacienteId, numeroAtencion)
+    const nueva = actual === 'titular' ? 'refuerzo' : 'titular'
+
+    const { error } = await supabase
+      .from('asignaciones')
+      .upsert(
+        { paciente_id: pacienteId, numero_atencion: numeroAtencion, asignado_a: nueva, updated_at: new Date().toISOString() },
+        { onConflict: 'paciente_id,numero_atencion' }
+      )
+
+    if (error) {
+      setError('No se pudo cambiar la asignación. Intenta de nuevo.')
+      console.error(error)
+      return
+    }
+
+    await cargarAsignaciones(pacientes.map(p => p.id))
   }
 
   async function cargarAtenciones(idsPacientes) {
@@ -256,6 +313,34 @@ function App() {
     setRevisandoCorreo(false)
   }
 
+  const timerToqueLargo = useRef(null)
+  const toqueLargoActivado = useRef(false)
+
+  function iniciarToqueLargo(pacienteId, numeroAtencion) {
+    toqueLargoActivado.current = false
+    timerToqueLargo.current = setTimeout(() => {
+      toqueLargoActivado.current = true
+      cambiarAsignacion(pacienteId, numeroAtencion)
+      if (navigator.vibrate) navigator.vibrate(40)
+    }, 550)
+  }
+
+  function cancelarToqueLargo() {
+    clearTimeout(timerToqueLargo.current)
+  }
+
+  function manejarClicTicket(pacienteId, numero, horaMarcada) {
+    if (toqueLargoActivado.current) {
+      toqueLargoActivado.current = false
+      return
+    }
+    if (horaMarcada) {
+      desmarcarAtencion(pacienteId, numero)
+    } else {
+      marcarAtencion(pacienteId, numero)
+    }
+  }
+
   function abrirFormularioNuevo() {
     setPacienteEditando(null)
     setFormulario({ ...PACIENTE_VACIO, fecha_atencion: fechaDatos || fechaHoy() })
@@ -350,16 +435,25 @@ function App() {
     )
   })
 
-  const totalAtencionesGeneral = pacientes.reduce((sum, p) => sum + (p.atenciones_dia || 1), 0)
-  const totalMarcadasGeneral = pacientes.reduce((sum, p) => {
-    const totalPac = p.atenciones_dia || 1
-    const marcadasPac = atenciones[p.id] || {}
-    const cantidad = Array.from({ length: totalPac }, (_, i) => i + 1).filter(n => marcadasPac[n]).length
-    return sum + cantidad
-  }, 0)
-  const porcentajeProgreso = totalAtencionesGeneral > 0
-    ? Math.round((totalMarcadasGeneral / totalAtencionesGeneral) * 100)
-    : 0
+  function calcularContadores(rol) {
+    let total = 0
+    let marcadas = 0
+    pacientes.forEach(p => {
+      const totalPac = p.atenciones_dia || 1
+      const marcadasPac = atenciones[p.id] || {}
+      for (let n = 1; n <= totalPac; n++) {
+        const asignacion = obtenerAsignacion(p.id, n)
+        if (asignacion === rol) {
+          total++
+          if (marcadasPac[n]) marcadas++
+        }
+      }
+    })
+    return { total, marcadas }
+  }
+
+  const contadorTitular = calcularContadores('titular')
+  const contadorRefuerzo = calcularContadores('refuerzo')
 
   return (
     <div className="contenedor">
@@ -374,15 +468,35 @@ function App() {
         </div>
       </header>
 
-      {totalAtencionesGeneral > 0 && (
+      {(contadorTitular.total > 0 || contadorRefuerzo.total > 0) && (
         <div className="progreso-container">
-          <div className="progreso-texto">
-            <span>Atenciones realizadas</span>
-            <span className="progreso-numero">{totalMarcadasGeneral} / {totalAtencionesGeneral}</span>
+          <div className="progreso-fila">
+            <div className="progreso-texto">
+              <span>Titular {contadorTitular.total > 10 ? '⚠️' : ''}</span>
+              <span className="progreso-numero">{contadorTitular.marcadas} / {contadorTitular.total}</span>
+            </div>
+            <div className="progreso-barra-fondo">
+              <div
+                className="progreso-barra-relleno"
+                style={{ width: `${contadorTitular.total ? (contadorTitular.marcadas / contadorTitular.total) * 100 : 0}%` }}
+              />
+            </div>
           </div>
-          <div className="progreso-barra-fondo">
-            <div className="progreso-barra-relleno" style={{ width: `${porcentajeProgreso}%` }} />
-          </div>
+          <p className="ayuda-toque-largo">Mantén presionado un ticket para asignarlo a Refuerzo</p>
+          {contadorRefuerzo.total > 0 && (
+            <div className="progreso-fila">
+              <div className="progreso-texto">
+                <span>Refuerzo</span>
+                <span className="progreso-numero progreso-numero-refuerzo">{contadorRefuerzo.marcadas} / {contadorRefuerzo.total}</span>
+              </div>
+              <div className="progreso-barra-fondo">
+                <div
+                  className="progreso-barra-relleno progreso-barra-refuerzo"
+                  style={{ width: `${contadorRefuerzo.total ? (contadorRefuerzo.marcadas / contadorRefuerzo.total) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -462,15 +576,18 @@ function App() {
                 <span className="col-tickets">
                   {numerosAtencion.map(numero => {
                     const horaMarcada = marcadasPaciente[numero]
+                    const asignacion = obtenerAsignacion(paciente.id, numero)
+                    const esRefuerzo = asignacion === 'refuerzo'
                     return (
                       <button
                         key={numero}
-                        className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'}`}
-                        onClick={() =>
-                          horaMarcada
-                            ? desmarcarAtencion(paciente.id, numero)
-                            : marcarAtencion(paciente.id, numero)
-                        }
+                        className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''}`}
+                        onClick={() => manejarClicTicket(paciente.id, numero, horaMarcada)}
+                        onTouchStart={() => iniciarToqueLargo(paciente.id, numero)}
+                        onTouchEnd={cancelarToqueLargo}
+                        onMouseDown={() => iniciarToqueLargo(paciente.id, numero)}
+                        onMouseUp={cancelarToqueLargo}
+                        onMouseLeave={cancelarToqueLargo}
                       >
                         {horaMarcada ? (
                           <>
@@ -481,6 +598,7 @@ function App() {
                             <Clock size={12} strokeWidth={2.3} /> {numero}ª
                           </>
                         )}
+                        {esRefuerzo && <span className="etiqueta-refuerzo">R</span>}
                       </button>
                     )
                   })}

@@ -57,6 +57,29 @@ body {
 
 .progreso-container {
   margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progreso-fila {
+  display: flex;
+  flex-direction: column;
+}
+
+.progreso-numero-refuerzo {
+  color: #7B4FA0;
+}
+
+.progreso-barra-refuerzo {
+  background: linear-gradient(90deg, #7B4FA0, #A87CC4);
+}
+
+.ayuda-toque-largo {
+  font-size: 10.5px;
+  color: #8A93A0;
+  margin: 0;
+  font-style: italic;
 }
 
 .progreso-texto {
@@ -251,6 +274,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 3px;
+  position: relative;
 }
 
 .ticket-pendiente {
@@ -261,6 +285,28 @@ body {
 .ticket-hecho {
   background: #E1F5E5;
   color: #1C7C3C;
+}
+
+.ticket-refuerzo {
+  position: relative;
+  box-shadow: inset 0 0 0 1.5px #7B4FA0;
+}
+
+.etiqueta-refuerzo {
+  position: absolute;
+  top: -5px;
+  right: -4px;
+  background: #7B4FA0;
+  color: white;
+  font-size: 8px;
+  font-weight: 800;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .col-nombre {
