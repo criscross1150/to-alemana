@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
-import { BedDouble, Pencil, X, Plus, RefreshCw, Download, Clock, CheckCircle2 } from 'lucide-react'
+import { BedDouble, Pencil, X, Plus, RefreshCw, Download, Clock, CheckCircle2, Search } from 'lucide-react'
 import './App.css'
 
 function fechaHoy() {
@@ -34,6 +34,7 @@ function App() {
   const [atenciones, setAtenciones] = useState({})
   const [fechaDatos, setFechaDatos] = useState(null)
   const [busqueda, setBusqueda] = useState('')
+  const [busquedaAbierta, setBusquedaAbierta] = useState(false)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -333,6 +334,17 @@ function App() {
     )
   })
 
+  const totalAtencionesGeneral = pacientes.reduce((sum, p) => sum + (p.atenciones_dia || 1), 0)
+  const totalMarcadasGeneral = pacientes.reduce((sum, p) => {
+    const totalPac = p.atenciones_dia || 1
+    const marcadasPac = atenciones[p.id] || {}
+    const cantidad = Array.from({ length: totalPac }, (_, i) => i + 1).filter(n => marcadasPac[n]).length
+    return sum + cantidad
+  }, 0)
+  const porcentajeProgreso = totalAtencionesGeneral > 0
+    ? Math.round((totalMarcadasGeneral / totalAtencionesGeneral) * 100)
+    : 0
+
   return (
     <div className="contenedor">
       <header className="encabezado">
@@ -345,20 +357,51 @@ function App() {
         </div>
       </header>
 
+      {totalAtencionesGeneral > 0 && (
+        <div className="progreso-container">
+          <div className="progreso-texto">
+            <span>Atenciones realizadas</span>
+            <span className="progreso-numero">{totalMarcadasGeneral} / {totalAtencionesGeneral}</span>
+          </div>
+          <div className="progreso-barra-fondo">
+            <div className="progreso-barra-relleno" style={{ width: `${porcentajeProgreso}%` }} />
+          </div>
+        </div>
+      )}
+
       <div className="barra-acciones">
-        <input
-          type="text"
-          placeholder="Buscar por nombre o habitación..."
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-          className="buscador"
-        />
-        <button className="boton-agregar" onClick={abrirFormularioNuevo}>
-          <Plus size={18} strokeWidth={2.5} /> Agregar paciente
+        <div className={`buscador-contenedor ${busquedaAbierta ? 'abierto' : ''}`}>
+          {busquedaAbierta && (
+            <input
+              type="text"
+              placeholder="Buscar por nombre o habitación..."
+              value={busqueda}
+              onChange={e => setBusqueda(e.target.value)}
+              className="buscador"
+              autoFocus
+            />
+          )}
+          <button
+            className="boton-cuadrado buscar"
+            onClick={() => {
+              if (busquedaAbierta) setBusqueda('')
+              setBusquedaAbierta(!busquedaAbierta)
+            }}
+            aria-label="Buscar"
+          >
+            {busquedaAbierta ? <X size={18} strokeWidth={2.3} /> : <Search size={18} strokeWidth={2.3} />}
+          </button>
+        </div>
+        <button className="boton-cuadrado agregar" onClick={abrirFormularioNuevo} aria-label="Agregar paciente">
+          <Plus size={20} strokeWidth={2.5} />
         </button>
-        <button className="boton-revisar" onClick={revisarCorreoNuevo} disabled={revisandoCorreo}>
-          <RefreshCw size={16} strokeWidth={2.3} className={revisandoCorreo ? 'icono-girando' : ''} />
-          {revisandoCorreo ? 'Revisando correo...' : 'Revisar correo nuevo'}
+        <button
+          className="boton-cuadrado revisar"
+          onClick={revisarCorreoNuevo}
+          disabled={revisandoCorreo}
+          aria-label="Revisar correo nuevo"
+        >
+          <RefreshCw size={18} strokeWidth={2.3} className={revisandoCorreo ? 'icono-girando' : ''} />
         </button>
       </div>
 
