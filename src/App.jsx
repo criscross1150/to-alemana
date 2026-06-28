@@ -55,18 +55,24 @@ function FilaSwipeable({ children, onSwipeRight, onSwipeLeft, deshabilitado, cla
     }
   })
 
-  const fondoColor = offset > 20 ? 'fondo-swipe-verde' : offset < -20 ? 'fondo-swipe-rojo' : ''
+  const haciaDerecha = offset > 4
+  const haciaIzquierda = offset < -4
+  const anchoFondo = Math.min(Math.abs(offset), 500)
 
   return (
-    <div className={`swipe-contenedor ${fondoColor}`}>
-      <div className="swipe-fondo-icono swipe-fondo-izq">
-        <X size={20} strokeWidth={2.5} />
-        <span>Refuerzo</span>
-      </div>
-      <div className="swipe-fondo-icono swipe-fondo-der">
-        <CheckCircle2 size={20} strokeWidth={2.5} />
-        <span>Atendido</span>
-      </div>
+    <div className="swipe-contenedor">
+      {haciaIzquierda && (
+        <div className="swipe-fondo-icono swipe-fondo-izq" style={{ width: `${anchoFondo}px` }}>
+          <X size={20} strokeWidth={2.5} />
+          <span>Refuerzo</span>
+        </div>
+      )}
+      {haciaDerecha && (
+        <div className="swipe-fondo-icono swipe-fondo-der" style={{ width: `${anchoFondo}px` }}>
+          <CheckCircle2 size={20} strokeWidth={2.5} />
+          <span>Atendido</span>
+        </div>
+      )}
       <div
         {...(deshabilitado ? {} : bind())}
         className={`fila-paciente ${claseExtra} ${arrastrando ? 'arrastrando' : ''}`}

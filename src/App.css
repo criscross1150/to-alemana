@@ -109,9 +109,10 @@ body {
   gap: 2px;
   font-size: 10px;
   font-weight: 700;
-  width: 90px;
   z-index: 1;
   color: white;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .swipe-fondo-izq {
@@ -122,14 +123,6 @@ body {
 .swipe-fondo-der {
   right: 0;
   background: #2E9E52;
-}
-
-.fondo-swipe-verde {
-  background: #2E9E52;
-}
-
-.fondo-swipe-rojo {
-  background: #D64545;
 }
 
 .seccion-resueltos {
