@@ -33,21 +33,22 @@ const PACIENTE_VACIO = {
 function FilaSwipeable({ children, onSwipeRight, onSwipeLeft, deshabilitado, claseExtra }) {
   const [offset, setOffset] = useState(0)
   const [arrastrando, setArrastrando] = useState(false)
-  const UMBRAL = 90
+  const UMBRAL = 60
 
   const bind = useDrag(({ down, movement: [mx], direction: [dx], velocity: [vx] }) => {
     if (deshabilitado) return
     setArrastrando(down)
     if (down) {
-      setOffset(mx)
+      const limitado = Math.max(-140, Math.min(140, mx))
+      setOffset(limitado)
     } else {
       const distancia = Math.abs(mx)
       const rapido = vx > 0.5 && distancia > 40
       if ((distancia > UMBRAL || rapido) && dx > 0) {
-        setOffset(500)
+        setOffset(200)
         setTimeout(() => onSwipeRight(), 150)
       } else if ((distancia > UMBRAL || rapido) && dx < 0) {
-        setOffset(-500)
+        setOffset(-200)
         setTimeout(() => onSwipeLeft(), 150)
       } else {
         setOffset(0)
@@ -57,7 +58,7 @@ function FilaSwipeable({ children, onSwipeRight, onSwipeLeft, deshabilitado, cla
 
   const haciaDerecha = offset > 4
   const haciaIzquierda = offset < -4
-  const anchoFondo = Math.min(Math.abs(offset), 500)
+  const anchoFondo = Math.min(Math.abs(offset), 200)
 
   return (
     <div className="swipe-contenedor">
