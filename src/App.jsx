@@ -360,7 +360,7 @@ function App() {
         </button>
         {promptInstalacion && (
           <button className="boton-instalar" onClick={instalarApp}>
-            ⬇ Instalar app en este dispositivo
+            ⬇ Instalar app
           </button>
         )}
       </div>

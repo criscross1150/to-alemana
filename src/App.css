@@ -100,14 +100,14 @@ body {
 }
 
 .boton-instalar {
-  width: 100%;
-  padding: 12px;
-  font-size: 15px;
+  padding: 7px 10px;
+  font-size: 12px;
   font-weight: 600;
-  background: #0B5FA5;
-  color: white;
-  border: 2px dashed #8FC1E8;
-  border-radius: 10px;
+  background: #EAF7EF;
+  color: #1C7C3C;
+  border: 1px solid #BFE6CC;
+  border-radius: 8px;
+  align-self: flex-start;
 }
 
 .mensaje-error {
