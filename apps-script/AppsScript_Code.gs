@@ -168,7 +168,6 @@ function procesarCorreoDiario() {
   }
 
   Logger.log('Pacientes encontrados para hoy: ' + pacientesHoy.length);
-  Logger.log('Fechas presentes en la hoja (ultimas): ' + Array.from(fechasEncontradas).sort().slice(-10).join(', '));
 
   // Respeta ediciones manuales: solo agrega pacientes que NO existen aun
   // (mismo cuenta_id + misma fecha). Nunca sobrescribe ni borra.
