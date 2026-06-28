@@ -30,6 +30,7 @@ const PACIENTE_VACIO = {
 }
 
 function App() {
+  const [perfil, setPerfil] = useState(null)
   const [pacientes, setPacientes] = useState([])
   const [atenciones, setAtenciones] = useState({})
   const [asignaciones, setAsignaciones] = useState({})
@@ -317,6 +318,7 @@ function App() {
   const toqueLargoActivado = useRef(false)
 
   function iniciarToqueLargo(pacienteId, numeroAtencion) {
+    if (perfil !== 'titular') return
     toqueLargoActivado.current = false
     timerToqueLargo.current = setTimeout(() => {
       toqueLargoActivado.current = true
@@ -332,6 +334,11 @@ function App() {
   function manejarClicTicket(pacienteId, numero, horaMarcada) {
     if (toqueLargoActivado.current) {
       toqueLargoActivado.current = false
+      return
+    }
+    const asignacion = obtenerAsignacion(pacienteId, numero)
+    if (asignacion !== perfil) {
+      setError(`Esta atención está asignada a ${asignacion === 'titular' ? 'Titular' : 'Refuerzo'}. No puedes marcarla desde el perfil ${perfil === 'titular' ? 'Titular' : 'Refuerzo'}.`)
       return
     }
     if (horaMarcada) {
@@ -455,11 +462,29 @@ function App() {
   const contadorTitular = calcularContadores('titular')
   const contadorRefuerzo = calcularContadores('refuerzo')
 
+  if (!perfil) {
+    return (
+      <div className="contenedor pantalla-perfil">
+        <h1 className="titulo-perfil">TO CAT</h1>
+        <p className="subtitulo-perfil">¿Con qué perfil vas a trabajar hoy?</p>
+        <button className="boton-perfil titular" onClick={() => setPerfil('titular')}>
+          Titular
+        </button>
+        <button className="boton-perfil refuerzo" onClick={() => setPerfil('refuerzo')}>
+          Refuerzo
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="contenedor">
       <header className="encabezado">
         <h1>TO CAT</h1>
         <div className="fechas">
+          <button className={`chip-perfil ${perfil}`} onClick={() => setPerfil(null)}>
+            {perfil === 'titular' ? 'Titular' : 'Refuerzo'} · cambiar
+          </button>
           <p className="fecha-dato">
             {fechaDatos ? `Pacientes del ${formatearFechaLegible(fechaDatos)}` : 'Sin datos cargados'}
           </p>
@@ -578,10 +603,11 @@ function App() {
                     const horaMarcada = marcadasPaciente[numero]
                     const asignacion = obtenerAsignacion(paciente.id, numero)
                     const esRefuerzo = asignacion === 'refuerzo'
+                    const noEsMio = asignacion !== perfil
                     return (
                       <button
                         key={numero}
-                        className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''}`}
+                        className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''} ${noEsMio ? 'ticket-no-mio' : ''}`}
                         onClick={() => manejarClicTicket(paciente.id, numero, horaMarcada)}
                         onTouchStart={() => iniciarToqueLargo(paciente.id, numero)}
                         onTouchEnd={cancelarToqueLargo}

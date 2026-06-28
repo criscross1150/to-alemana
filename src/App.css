@@ -16,6 +16,69 @@ body {
   padding-bottom: 70px;
 }
 
+.pantalla-perfil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  gap: 10px;
+}
+
+.titulo-perfil {
+  font-size: 28px;
+  color: #0B5FA5;
+  margin: 0 0 4px 0;
+}
+
+.subtitulo-perfil {
+  font-size: 15px;
+  color: #5A6472;
+  margin: 0 0 18px 0;
+}
+
+.boton-perfil {
+  width: 220px;
+  padding: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  color: white;
+}
+
+.boton-perfil.titular {
+  background: #0B5FA5;
+}
+
+.boton-perfil.refuerzo {
+  background: #7B4FA0;
+}
+
+.chip-perfil {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: none;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.chip-perfil.titular {
+  background: #0B5FA5;
+}
+
+.chip-perfil.refuerzo {
+  background: #7B4FA0;
+}
+
+.ticket-no-mio {
+  opacity: 0.45;
+}
+
 .encabezado {
   display: flex;
   align-items: flex-start;
@@ -33,6 +96,9 @@ body {
 
 .fechas {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .fecha-dato {
