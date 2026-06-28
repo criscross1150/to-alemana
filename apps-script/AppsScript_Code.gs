@@ -113,6 +113,9 @@ function procesarCorreoDiario() {
   const datos = hoja.getDataRange().getValues();
   const pacientesHoy = [];
 
+  Logger.log('Buscando fecha: ' + fechaHoyStr + ' | hoja: ' + nombreHoja + ' | filas totales: ' + datos.length);
+  const fechasEncontradas = new Set();
+
   // Asume fila 1 = encabezados, datos desde fila 2 (indice 1)
   for (let i = 1; i < datos.length; i++) {
     const fila = datos[i];
@@ -129,6 +132,7 @@ function procesarCorreoDiario() {
     if (!fechaAtencion) continue;
 
     const fechaFilaStr = formatearFecha(new Date(fechaAtencion));
+    fechasEncontradas.add(fechaFilaStr);
     if (fechaFilaStr !== fechaHoyStr) continue; // solo pacientes de hoy
 
     const diagnosticoTexto = DIAGNOSTICOS[String(diagnosticoCodigo).trim()] || ('Código ' + diagnosticoCodigo);
@@ -147,6 +151,7 @@ function procesarCorreoDiario() {
   }
 
   Logger.log('Pacientes encontrados para hoy: ' + pacientesHoy.length);
+  Logger.log('Fechas presentes en la hoja (ultimas): ' + Array.from(fechasEncontradas).sort().slice(-10).join(', '));
 
   // Respeta ediciones manuales: solo agrega pacientes que NO existen aun
   // (mismo cuenta_id + misma fecha). Nunca sobrescribe ni borra.
