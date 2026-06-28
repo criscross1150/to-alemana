@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
-import { BedDouble, User, Stethoscope, Pencil, X, Plus, RefreshCw, Download, Clock, CheckCircle2 } from 'lucide-react'
+import { BedDouble, Pencil, X, Plus, RefreshCw, Download, Clock, CheckCircle2 } from 'lucide-react'
 import './App.css'
 
 function fechaHoy() {
@@ -374,13 +374,9 @@ function App() {
         <div className="tabla-pacientes">
           <div className="fila-encabezado">
             <span className="col-hab"><BedDouble size={13} strokeWidth={2.2} /></span>
-            <span className="col-nombre">
-              <User size={12} strokeWidth={2.2} /> Nombre / Cta
-            </span>
+            <span className="col-nombre">Nombre / Cta</span>
             <span className="col-edad">Edad</span>
-            <span className="col-dg">
-              <Stethoscope size={12} strokeWidth={2.2} /> Diag.
-            </span>
+            <span className="col-dg">Diag.</span>
             <span className="col-tickets">Atención</span>
             <span className="col-acciones"></span>
           </div>
