@@ -81,7 +81,33 @@ Nota: código 11 no existe en la fuente original (salto intencional, confirmado 
 - Debe poder leerse el correo "en cualquier momento" (botón o ejecución manual del script, no solo automático)
 - Trigger automático configurado a las 6:00 AM diario
 
-## Archivos del proyecto
+## Scripts SQL ejecutados en Supabase (historial)
+
+Todos corridos manualmente en SQL Editor de Supabase. Carpeta `supabase-sql/` guarda los que quedaron disponibles.
+
+1. Creación tabla `pacientes` (estructura base)
+2. `alter table pacientes add column apellido_materno text;`
+3. Inserciones de simulación con datos reales del Excel (pruebas, fechas 2026-03-01 y 2026-03-12)
+4. Corrección retroactiva de diagnósticos (código numérico → texto) vía múltiples `update`
+5. Limpieza de pacientes duplicados (`delete` con self-join por `cuenta_id` + `fecha_atencion`)
+6. `alter table pacientes add constraint pacientes_cuenta_fecha_unico unique (cuenta_id, fecha_atencion);`
+7. Creación tabla `atenciones` (registro de horario de atención realizada)
+8. `habilitar_realtime.sql` — activa Supabase Realtime en `pacientes` y `atenciones`
+
+## Funcionalidades completas al día de hoy
+
+- Lectura automática de correo nocturno (Gmail) vía Google Apps Script
+- Traducción automática de código de diagnóstico a texto legible
+- Detección automática de la fecha más reciente con datos (no depende de coincidir con la fecha calendario)
+- Prevención de duplicados (constraint único + lógica de inserción que respeta ediciones manuales)
+- App web React desplegada en Vercel, sin login, acceso público vía link
+- Vista tabla compacta optimizada para celular (sin scroll lateral)
+- CRUD completo: agregar, editar, eliminar pacientes
+- Botón "Revisar correo nuevo" — ejecuta el Apps Script bajo demanda desde la app (vía Web App deploy)
+- Sistema de tickets de atención: marca hora exacta de cada atención realizada (zona horaria Chile corregida)
+- Colores de fila: verde = todas las atenciones marcadas, mostaza = parcialmente marcadas
+- Supabase Realtime: cambios de cualquier usuario visibles al instante en todos los dispositivos conectados
+- Historial de pacientes se acumula sin borrarse; la app siempre muestra solo la fecha más reciente
 
 - `AppsScript_Code.gs` — script que corre en script.google.com, lee Gmail y sube a Supabase
 - (pendiente) App React — frontend de la app
