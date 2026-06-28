@@ -567,28 +567,38 @@ function App() {
             const asignacion = obtenerAsignacion(paciente.id, numero)
             const esRefuerzo = asignacion === 'refuerzo'
             const noEsMio = asignacion !== perfil
+            const puedeRecuperar = esResuelto && perfil === 'titular' && esRefuerzo && !horaMarcada
             return (
-              <button
-                key={numero}
-                className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''} ${noEsMio ? 'ticket-no-mio' : ''}`}
-                onClick={() => manejarClicTicket(paciente.id, numero, horaMarcada)}
-                onTouchStart={() => iniciarToqueLargo(paciente.id, numero)}
-                onTouchEnd={cancelarToqueLargo}
-                onMouseDown={() => iniciarToqueLargo(paciente.id, numero)}
-                onMouseUp={cancelarToqueLargo}
-                onMouseLeave={cancelarToqueLargo}
-              >
-                {horaMarcada ? (
-                  <>
-                    <CheckCircle2 size={12} strokeWidth={2.3} /> {formatearHora(horaMarcada)}
-                  </>
-                ) : (
-                  <>
-                    <Clock size={12} strokeWidth={2.3} /> {numero}ª
-                  </>
+              <div key={numero} className="ticket-grupo">
+                <button
+                  className={`ticket ${horaMarcada ? 'ticket-hecho' : 'ticket-pendiente'} ${esRefuerzo ? 'ticket-refuerzo' : ''} ${noEsMio ? 'ticket-no-mio' : ''}`}
+                  onClick={() => manejarClicTicket(paciente.id, numero, horaMarcada)}
+                  onTouchStart={() => iniciarToqueLargo(paciente.id, numero)}
+                  onTouchEnd={cancelarToqueLargo}
+                  onMouseDown={() => iniciarToqueLargo(paciente.id, numero)}
+                  onMouseUp={cancelarToqueLargo}
+                  onMouseLeave={cancelarToqueLargo}
+                >
+                  {horaMarcada ? (
+                    <>
+                      <CheckCircle2 size={12} strokeWidth={2.3} /> {formatearHora(horaMarcada)}
+                    </>
+                  ) : (
+                    <>
+                      <Clock size={12} strokeWidth={2.3} /> {numero}ª
+                    </>
+                  )}
+                  {esRefuerzo && <span className="etiqueta-refuerzo">R</span>}
+                </button>
+                {puedeRecuperar && (
+                  <button
+                    className="boton-recuperar"
+                    onClick={() => cambiarAsignacionForzada(paciente.id, numero, 'titular')}
+                  >
+                    ↩ Recuperar
+                  </button>
                 )}
-                {esRefuerzo && <span className="etiqueta-refuerzo">R</span>}
-              </button>
+              </div>
             )
           })}
         </span>

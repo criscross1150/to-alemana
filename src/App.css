@@ -401,6 +401,22 @@ body {
   align-items: stretch;
 }
 
+.ticket-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.boton-recuperar {
+  border: none;
+  border-radius: 5px;
+  padding: 2px 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  background: #EDE3F4;
+  color: #5B2E82;
+}
+
 .ticket {
   border: none;
   border-radius: 6px;
