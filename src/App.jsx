@@ -358,11 +358,6 @@ function App() {
         <button className="boton-revisar" onClick={revisarCorreoNuevo} disabled={revisandoCorreo}>
           {revisandoCorreo ? 'Revisando correo...' : '🔄 Revisar correo nuevo'}
         </button>
-        {promptInstalacion && (
-          <button className="boton-instalar" onClick={instalarApp}>
-            ⬇ Instalar app
-          </button>
-        )}
       </div>
 
       {error && <div className="mensaje-error">{error}</div>}
@@ -431,6 +426,14 @@ function App() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {promptInstalacion && (
+        <div className="pie-instalar">
+          <button className="boton-instalar" onClick={instalarApp}>
+            ⬇ Instalar app
+          </button>
         </div>
       )}
 

@@ -107,7 +107,12 @@ body {
   color: #1C7C3C;
   border: 1px solid #BFE6CC;
   border-radius: 8px;
-  align-self: flex-start;
+}
+
+.pie-instalar {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
 }
 
 .mensaje-error {
