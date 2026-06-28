@@ -111,24 +111,25 @@ body {
   font-weight: 700;
   width: 90px;
   z-index: 1;
+  color: white;
 }
 
 .swipe-fondo-izq {
   left: 0;
-  color: #A12424;
+  background: #D64545;
 }
 
 .swipe-fondo-der {
   right: 0;
-  color: #1C7C3C;
+  background: #2E9E52;
 }
 
 .fondo-swipe-verde {
-  background: #E1F5E5;
+  background: #2E9E52;
 }
 
 .fondo-swipe-rojo {
-  background: #FCE8E8;
+  background: #D64545;
 }
 
 .seccion-resueltos {
