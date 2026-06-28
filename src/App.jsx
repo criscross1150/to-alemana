@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
 import './App.css'
 
@@ -43,6 +43,32 @@ function App() {
 
   useEffect(() => {
     cargarPacientes()
+  }, [])
+
+  const pacientesRef = useRef(pacientes)
+  useEffect(() => {
+    pacientesRef.current = pacientes
+  }, [pacientes])
+
+  useEffect(() => {
+    const canalPacientes = supabase
+      .channel('cambios-pacientes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pacientes' }, () => {
+        cargarPacientes()
+      })
+      .subscribe()
+
+    const canalAtenciones = supabase
+      .channel('cambios-atenciones')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'atenciones' }, () => {
+        cargarAtenciones(pacientesRef.current.map(p => p.id))
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(canalPacientes)
+      supabase.removeChannel(canalAtenciones)
+    }
   }, [])
 
   useEffect(() => {
