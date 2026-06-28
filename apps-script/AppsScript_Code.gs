@@ -113,10 +113,28 @@ function procesarCorreoDiario() {
   const datos = hoja.getDataRange().getValues();
   const pacientesHoy = [];
 
-  Logger.log('Buscando fecha: ' + fechaHoyStr + ' | hoja: ' + nombreHoja + ' | filas totales: ' + datos.length);
-  const fechasEncontradas = new Set();
+  // Paso 1: recorrer todas las filas y encontrar la fecha MAS RECIENTE con datos
+  // (en vez de asumir que es la fecha de hoy del calendario)
+  let fechaMasReciente = null;
+  for (let i = 1; i < datos.length; i++) {
+    const fechaAtencion = datos[i][1]; // columna B
+    if (!fechaAtencion) continue;
+    const fechaObj = new Date(fechaAtencion);
+    if (!fechaMasReciente || fechaObj > fechaMasReciente) {
+      fechaMasReciente = fechaObj;
+    }
+  }
 
-  // Asume fila 1 = encabezados, datos desde fila 2 (indice 1)
+  if (!fechaMasReciente) {
+    Logger.log('No se encontraron fechas validas en la hoja ' + nombreHoja);
+    DriveApp.getFileById(archivoTemp.id).setTrashed(true);
+    return;
+  }
+
+  const fechaUltimaStr = formatearFecha(fechaMasReciente);
+  Logger.log('Ultima fecha con pacientes registrados en el Excel: ' + fechaUltimaStr + ' (hoja: ' + nombreHoja + ')');
+
+  // Paso 2: extraer todos los pacientes que tengan esa fecha (la mas reciente)
   for (let i = 1; i < datos.length; i++) {
     const fila = datos[i];
     const fechaAtencion = fila[1]; // columna B (indice 1)
@@ -132,8 +150,7 @@ function procesarCorreoDiario() {
     if (!fechaAtencion) continue;
 
     const fechaFilaStr = formatearFecha(new Date(fechaAtencion));
-    fechasEncontradas.add(fechaFilaStr);
-    if (fechaFilaStr !== fechaHoyStr) continue; // solo pacientes de hoy
+    if (fechaFilaStr !== fechaUltimaStr) continue; // solo pacientes de la fecha mas reciente
 
     const diagnosticoTexto = DIAGNOSTICOS[String(diagnosticoCodigo).trim()] || ('Código ' + diagnosticoCodigo);
 
@@ -155,7 +172,7 @@ function procesarCorreoDiario() {
 
   // Respeta ediciones manuales: solo agrega pacientes que NO existen aun
   // (mismo cuenta_id + misma fecha). Nunca sobrescribe ni borra.
-  const pacientesNuevos = filtrarPacientesNuevos(pacientesHoy, fechaHoyStr);
+  const pacientesNuevos = filtrarPacientesNuevos(pacientesHoy, fechaUltimaStr);
   Logger.log('Pacientes nuevos a insertar: ' + pacientesNuevos.length);
   subirPacientes(pacientesNuevos);
 
