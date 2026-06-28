@@ -78,6 +78,10 @@ body {
   color: white;
   border: none;
   border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .boton-agregar:active {
@@ -93,6 +97,19 @@ body {
   color: #1A1F26;
   border: none;
   border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.icono-girando {
+  animation: girar 1s linear infinite;
+}
+
+@keyframes girar {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .boton-revisar:disabled {
@@ -107,6 +124,9 @@ body {
   color: #1C7C3C;
   border: 1px solid #BFE6CC;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .pie-instalar {
@@ -165,6 +185,10 @@ body {
   font-weight: 700;
   white-space: nowrap;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
 }
 
 .ticket-pendiente {
@@ -203,6 +227,12 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.fila-encabezado span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .fila-paciente {

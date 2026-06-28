@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
+import { BedDouble, User, Stethoscope, Pencil, X, Plus, RefreshCw, Download, Clock, CheckCircle2 } from 'lucide-react'
 import './App.css'
 
 function fechaHoy() {
@@ -353,10 +354,11 @@ function App() {
           className="buscador"
         />
         <button className="boton-agregar" onClick={abrirFormularioNuevo}>
-          + Agregar paciente
+          <Plus size={18} strokeWidth={2.5} /> Agregar paciente
         </button>
         <button className="boton-revisar" onClick={revisarCorreoNuevo} disabled={revisandoCorreo}>
-          {revisandoCorreo ? 'Revisando correo...' : '🔄 Revisar correo nuevo'}
+          <RefreshCw size={16} strokeWidth={2.3} className={revisandoCorreo ? 'icono-girando' : ''} />
+          {revisandoCorreo ? 'Revisando correo...' : 'Revisar correo nuevo'}
         </button>
       </div>
 
@@ -371,10 +373,14 @@ function App() {
       ) : (
         <div className="tabla-pacientes">
           <div className="fila-encabezado">
-            <span className="col-hab">Hab</span>
-            <span className="col-nombre">Nombre / Cta</span>
+            <span className="col-hab"><BedDouble size={13} strokeWidth={2.2} /></span>
+            <span className="col-nombre">
+              <User size={12} strokeWidth={2.2} /> Nombre / Cta
+            </span>
             <span className="col-edad">Edad</span>
-            <span className="col-dg">Diag.</span>
+            <span className="col-dg">
+              <Stethoscope size={12} strokeWidth={2.2} /> Diag.
+            </span>
             <span className="col-tickets">Atención</span>
             <span className="col-acciones"></span>
           </div>
@@ -410,17 +416,25 @@ function App() {
                             : marcarAtencion(paciente.id, numero)
                         }
                       >
-                        {horaMarcada ? `✓ ${formatearHora(horaMarcada)}` : `${numero}ª`}
+                        {horaMarcada ? (
+                          <>
+                            <CheckCircle2 size={12} strokeWidth={2.3} /> {formatearHora(horaMarcada)}
+                          </>
+                        ) : (
+                          <>
+                            <Clock size={12} strokeWidth={2.3} /> {numero}ª
+                          </>
+                        )}
                       </button>
                     )
                   })}
                 </span>
                 <span className="col-acciones">
                   <button className="boton-icono editar" onClick={() => abrirFormularioEditar(paciente)} aria-label="Editar">
-                    ✎
+                    <Pencil size={13} strokeWidth={2.3} />
                   </button>
                   <button className="boton-icono eliminar" onClick={() => eliminarPaciente(paciente)} aria-label="Eliminar">
-                    ✕
+                    <X size={14} strokeWidth={2.5} />
                   </button>
                 </span>
               </div>
@@ -432,7 +446,7 @@ function App() {
       {promptInstalacion && (
         <div className="pie-instalar">
           <button className="boton-instalar" onClick={instalarApp}>
-            ⬇ Instalar app
+            <Download size={14} strokeWidth={2.3} /> Instalar app
           </button>
         </div>
       )}
